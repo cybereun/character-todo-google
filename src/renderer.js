@@ -906,7 +906,7 @@ geminiConfigBtn?.addEventListener('click', async () => {
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
     
     const modal = document.createElement('div');
-    modal.style.cssText = 'background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:300px;text-align:center;font-family:sans-serif;';
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:360px;text-align:center;font-family:sans-serif;';
     
     const title = document.createElement('h3');
     title.textContent = 'Gemini API 키 설정';
@@ -919,16 +919,20 @@ geminiConfigBtn?.addEventListener('click', async () => {
     input.style.cssText = 'width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:15px;';
     
     const btnContainer = document.createElement('div');
-    btnContainer.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;';
+    btnContainer.style.cssText = 'display:flex;justify-content:center;gap:8px;';
     
     const linkBtn = document.createElement('button');
     linkBtn.textContent = '링크';
-    linkBtn.style.cssText = 'padding:6px 12px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;';
+    linkBtn.style.cssText = 'padding:8px 14px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    linkBtn.onmouseover = () => linkBtn.style.background = '#0e8f6e';
+    linkBtn.onmouseout = () => linkBtn.style.background = '#10a37f';
     linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
 
     const testBtn = document.createElement('button');
     testBtn.textContent = '테스트';
-    testBtn.style.cssText = 'padding:6px 12px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;';
+    testBtn.style.cssText = 'padding:8px 14px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    testBtn.onmouseover = () => testBtn.style.background = '#d97706';
+    testBtn.onmouseout = () => testBtn.style.background = '#f59e0b';
     testBtn.onclick = async () => {
       const testKey = input.value.trim();
       if (!testKey) { alert('키를 입력하세요.'); return; }
@@ -947,12 +951,16 @@ geminiConfigBtn?.addEventListener('click', async () => {
     
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '취소';
-    cancelBtn.style.cssText = 'padding:6px 12px;border:none;background:#eee;border-radius:4px;cursor:pointer;';
+    cancelBtn.style.cssText = 'padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    cancelBtn.onmouseover = () => cancelBtn.style.background = '#d1d5db';
+    cancelBtn.onmouseout = () => cancelBtn.style.background = '#e5e7eb';
     cancelBtn.onclick = () => document.body.removeChild(overlay);
     
     const saveBtn = document.createElement('button');
     saveBtn.textContent = '저장';
-    saveBtn.style.cssText = 'padding:6px 12px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;';
+    saveBtn.style.cssText = 'padding:8px 14px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    saveBtn.onmouseover = () => saveBtn.style.background = '#005a9e';
+    saveBtn.onmouseout = () => saveBtn.style.background = '#0078d4';
     saveBtn.onclick = async () => {
       const newKey = input.value.trim();
       const success = await window.characterTodo.setGeminiKey(newKey);
@@ -986,7 +994,7 @@ if (window.characterTodo?.onGeminiPromptApiKey) {
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
     
     const modal = document.createElement('div');
-    modal.style.cssText = 'background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:300px;text-align:center;font-family:sans-serif;';
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:360px;text-align:center;font-family:sans-serif;';
     
     const title = document.createElement('h3');
     title.textContent = 'Gemini API 키 필요';
@@ -1002,16 +1010,20 @@ if (window.characterTodo?.onGeminiPromptApiKey) {
     input.style.cssText = 'width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:15px;';
     
     const btnContainer = document.createElement('div');
-    btnContainer.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;';
+    btnContainer.style.cssText = 'display:flex;justify-content:center;gap:8px;';
     
     const linkBtn = document.createElement('button');
     linkBtn.textContent = '링크';
-    linkBtn.style.cssText = 'padding:6px 12px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;';
+    linkBtn.style.cssText = 'padding:8px 14px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    linkBtn.onmouseover = () => linkBtn.style.background = '#0e8f6e';
+    linkBtn.onmouseout = () => linkBtn.style.background = '#10a37f';
     linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
 
     const testBtn = document.createElement('button');
     testBtn.textContent = '테스트';
-    testBtn.style.cssText = 'padding:6px 12px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;';
+    testBtn.style.cssText = 'padding:8px 14px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    testBtn.onmouseover = () => testBtn.style.background = '#d97706';
+    testBtn.onmouseout = () => testBtn.style.background = '#f59e0b';
     testBtn.onclick = async () => {
       const testKey = input.value.trim();
       if (!testKey) { alert('키를 입력하세요.'); return; }
@@ -1030,12 +1042,16 @@ if (window.characterTodo?.onGeminiPromptApiKey) {
     
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '취소';
-    cancelBtn.style.cssText = 'padding:6px 12px;border:none;background:#eee;border-radius:4px;cursor:pointer;';
+    cancelBtn.style.cssText = 'padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    cancelBtn.onmouseover = () => cancelBtn.style.background = '#d1d5db';
+    cancelBtn.onmouseout = () => cancelBtn.style.background = '#e5e7eb';
     cancelBtn.onclick = () => document.body.removeChild(overlay);
 
     const saveBtn = document.createElement('button');
-    saveBtn.textContent = '확인 및 저장';
-    saveBtn.style.cssText = 'padding:6px 12px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;';
+    saveBtn.textContent = '저장';
+    saveBtn.style.cssText = 'padding:8px 14px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
+    saveBtn.onmouseover = () => saveBtn.style.background = '#005a9e';
+    saveBtn.onmouseout = () => saveBtn.style.background = '#0078d4';
     saveBtn.onclick = async () => {
       const newKey = input.value.trim();
       if (newKey !== '') {

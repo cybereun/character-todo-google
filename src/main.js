@@ -1,6 +1,6 @@
 const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut, clipboard, Notification, shell } = require('electron');
 
-app.setAppUserModelId('캐릭터 Todo V2.5.2');
+app.setAppUserModelId('캐릭터 Todo V2.5.3');
 
 const fs = require('fs');
 const path = require('path');
