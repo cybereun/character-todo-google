@@ -1,0 +1,47 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Character Todo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="widget" data-expanded="false" data-has-todos="false" data-has-overdue="false">
+      <section class="todo-panel" aria-label="할일 목록">
+        <form class="todo-form" autocomplete="off">
+          <span class="todo-entry">
+            <input class="todo-input" name="todo" type="text" maxlength="80" placeholder="할일을 입력하세요" />
+            <input class="due-input" name="due" type="datetime-local" title="마감 날짜와 시간" aria-label="마감 날짜와 시간" />
+            <button class="due-button" type="button" title="마감 날짜와 시간" aria-label="마감 날짜와 시간"></button>
+          </span>
+          <button class="icon-button add-button" type="submit" title="추가" aria-label="추가">+</button>
+        </form>
+        <div class="todo-toolbar">
+          <button class="view-toggle" type="button" aria-pressed="false">완료 목록 보기</button>
+          <span class="todo-count" aria-live="polite"></span>
+          <button class="google-sync-btn" type="button" style="margin-left:auto; font-size: 12px; cursor: pointer; border: 1px solid var(--panel-border); background: #fff; border-radius: 4px; padding: 2px 6px; color: var(--muted);">Google Login</button>
+          <button class="bulk-delete-btn" type="button" style="display:none; margin-left:8px; font-size: 12px; cursor: pointer; border: 1px solid #ff4d4f; background: #fff; border-radius: 4px; padding: 2px 6px; color: #ff4d4f;">완료 일괄 삭제</button>
+        </div>
+        <ul class="todo-list" aria-live="polite"></ul>
+        <div class="undo-toast" role="status" aria-live="polite">
+          <span class="undo-message">완료됨</span>
+          <button class="undo-button" type="button">실행 취소</button>
+        </div>
+      </section>
+
+      <button class="character-button" type="button" aria-label="할일창 열기">
+        <span class="character-shadow"></span>
+        <span class="character-art">
+          <img class="character-img character-slim" src="../assets/character-slim.png" alt="" draggable="false" />
+          <img class="character-img character-full" src="../assets/character-full.png" alt="" draggable="false" />
+          <img class="character-img character-slim-blink" src="../assets/character-slim-blink.png" alt="" draggable="false" />
+          <img class="character-img character-full-blink" src="../assets/character-full-blink.png" alt="" draggable="false" />
+          <img class="character-img character-angry" src="../assets/character-angry.png" alt="" draggable="false" />
+        </span>
+        <span class="burst-layer" aria-hidden="true"></span>
+      </button>
+    </main>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

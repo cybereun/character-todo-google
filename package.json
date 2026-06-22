@@ -1,0 +1,71 @@
+{
+  "name": "character-todo-google",
+  "version": "2.0.0",
+  "description": "A floating desktop todo widget with Google API integration.",
+  "main": "src/main.js",
+  "author": "Gogo Lebi",
+  "private": true,
+  "scripts": {
+    "start": "powershell -ExecutionPolicy Bypass -File ./run-app.ps1",
+    "lint:js": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js",
+    "dist": "powershell -ExecutionPolicy Bypass -File ./build-exe.ps1"
+  },
+  "build": {
+    "appId": "com.gogolebi.characterTodoGoogle",
+    "productName": "Character Todo Google",
+    "artifactName": "${productName} Setup ${version}.${ext}",
+    "copyright": "Copyright © 2026 Gogo Lebi",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "build/icon.ico",
+      "package.json",
+      "README.md",
+      "credentials.json"
+    ],
+    "win": {
+      "publisherName": "Gogo Lebi",
+      "requestedExecutionLevel": "asInvoker",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "packElevateHelper": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Character Todo Google",
+      "license": "build/license.txt",
+      "language": "1042",
+      "runAfterFinish": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/installerSidebar.bmp",
+      "installerHeader": "build/installerHeader.bmp",
+      "installerHeaderIcon": "build/icon.ico",
+      "include": "build/installer.nsh"
+    }
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "googleapis": "^173.0.0"
+  }
+}
