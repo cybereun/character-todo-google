@@ -172,11 +172,6 @@ function clampWindowByVisibleRect(bounds) {
 function setExpandedState(nextExpanded) {
   if (!mainWindow || expanded === nextExpanded) return;
   expanded = nextExpanded;
-
-  if (expanded) {
-    const current = mainWindow.getBounds();
-    mainWindow.setBounds(clampBounds(current), false);
-  }
 }
 
 function showMainWindow() {
@@ -301,11 +296,11 @@ ipcMain.handle('widget:move-by', (_event, delta) => {
 
   const current = mainWindow.getBounds();
   mainWindow.setBounds(
-    clampWindowByVisibleRect({
+    {
       ...current,
       x: current.x + Math.round(delta.dx),
       y: current.y + Math.round(delta.dy)
-    }),
+    },
     false
   );
 });
