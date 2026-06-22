@@ -58,7 +58,6 @@ function registerGlobalShortcuts() {
 
     try {
       const base64Image = image.toPNG().toString('base64');
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
       const payload = {
         contents: [{
           parts: [
@@ -76,19 +75,35 @@ function registerGlobalShortcuts() {
         }
       };
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+      let resultText = null;
 
-      if (!res.ok) {
-        throw new Error(`API 오류: ${res.status}`);
+      for (const modelName of modelsToTry) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+              resultText = data.candidates[0].content.parts[0].text;
+              break;
+            }
+          }
+        } catch (e) {
+          logError(`[${modelName}] fetch error`, e);
+        }
       }
 
-      const data = await res.json();
-      const text = data.candidates[0].content.parts[0].text;
-      const parsed = JSON.parse(text);
+      if (!resultText) {
+        throw new Error('API 오류: 사용할 수 있는 Gemini 모델을 찾지 못했습니다. API 키나 네트워크를 확인하세요.');
+      }
+
+      const parsed = JSON.parse(resultText);
 
       if (parsed.title) {
         if (mainWindow && !mainWindow.isDestroyed()) {
