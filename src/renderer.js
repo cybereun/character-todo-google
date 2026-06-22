@@ -921,6 +921,30 @@ geminiConfigBtn?.addEventListener('click', async () => {
     const btnContainer = document.createElement('div');
     btnContainer.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;';
     
+    const linkBtn = document.createElement('button');
+    linkBtn.textContent = '링크';
+    linkBtn.style.cssText = 'padding:6px 12px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;';
+    linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
+
+    const testBtn = document.createElement('button');
+    testBtn.textContent = '테스트';
+    testBtn.style.cssText = 'padding:6px 12px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;';
+    testBtn.onclick = async () => {
+      const testKey = input.value.trim();
+      if (!testKey) { alert('키를 입력하세요.'); return; }
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${testKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
+        });
+        if (res.ok) alert('테스트 성공! 정상적인 키입니다.');
+        else alert('테스트 실패! 유효하지 않은 키입니다.');
+      } catch (e) {
+        alert('테스트 중 오류가 발생했습니다.');
+      }
+    };
+    
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '취소';
     cancelBtn.style.cssText = 'padding:6px 12px;border:none;background:#eee;border-radius:4px;cursor:pointer;';
@@ -940,6 +964,8 @@ geminiConfigBtn?.addEventListener('click', async () => {
       }
     };
     
+    btnContainer.appendChild(linkBtn);
+    btnContainer.appendChild(testBtn);
     btnContainer.appendChild(cancelBtn);
     btnContainer.appendChild(saveBtn);
     
@@ -978,6 +1004,35 @@ if (window.characterTodo?.onGeminiPromptApiKey) {
     const btnContainer = document.createElement('div');
     btnContainer.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;';
     
+    const linkBtn = document.createElement('button');
+    linkBtn.textContent = '링크';
+    linkBtn.style.cssText = 'padding:6px 12px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;';
+    linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
+
+    const testBtn = document.createElement('button');
+    testBtn.textContent = '테스트';
+    testBtn.style.cssText = 'padding:6px 12px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;';
+    testBtn.onclick = async () => {
+      const testKey = input.value.trim();
+      if (!testKey) { alert('키를 입력하세요.'); return; }
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${testKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
+        });
+        if (res.ok) alert('테스트 성공! 정상적인 키입니다.');
+        else alert('테스트 실패! 유효하지 않은 키입니다.');
+      } catch (e) {
+        alert('테스트 중 오류가 발생했습니다.');
+      }
+    };
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '취소';
+    cancelBtn.style.cssText = 'padding:6px 12px;border:none;background:#eee;border-radius:4px;cursor:pointer;';
+    cancelBtn.onclick = () => document.body.removeChild(overlay);
+
     const saveBtn = document.createElement('button');
     saveBtn.textContent = '확인 및 저장';
     saveBtn.style.cssText = 'padding:6px 12px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;';
@@ -990,6 +1045,9 @@ if (window.characterTodo?.onGeminiPromptApiKey) {
       document.body.removeChild(overlay);
     };
     
+    btnContainer.appendChild(linkBtn);
+    btnContainer.appendChild(testBtn);
+    btnContainer.appendChild(cancelBtn);
     btnContainer.appendChild(saveBtn);
     
     modal.appendChild(title);
