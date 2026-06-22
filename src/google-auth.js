@@ -25,10 +25,10 @@ let currentCodeVerifier = null;
 function cleanGoogleText(value) {
   if (typeof value !== 'string') return '';
   return value
-    .replaceAll('[?꾨즺]', '[완료]')
-    .replaceAll('[?꽂짓]', '[완료]')
-    .replaceAll('?꾨즺', '완료')
-    .replaceAll('?꽂짓', '완료')
+    .replaceAll('[?꾨즺]', '[?�료]')
+    .replaceAll('[?꽂짓]', '[?�료]')
+    .replaceAll('?꾨즺', '?�료')
+    .replaceAll('?꽂짓', '?�료')
     .trim();
 }
 async function loadCredentials() {
@@ -41,7 +41,7 @@ async function loadCredentials() {
     const credentials = JSON.parse(content);
     const { client_secret, client_id } = credentials.installed;
     
-    // ?곗뒪?ы깙 ???섍꼍?먯꽌??援ш? ?뺤콉??PKCE瑜??곕뜑?쇰룄 client_secret??臾댁“嫄?媛숈씠 蹂대궡???⑸땲??
+    // ?곗뒪??�?????�꼍?�?��???��? ?뺤콉??PKCE???곕뜑??�룄 client_secret???�댁?�嫄?媛숈??蹂�?�????�땲??
     oauth2Client = new google.auth.OAuth2(client_id, client_secret, 'http://localhost:3000/oauth2callback');
     googleTasksApi = google.tasks({ version: 'v1', auth: oauth2Client });
     googleCalendarApi = google.calendar({ version: 'v3', auth: oauth2Client });
@@ -165,8 +165,8 @@ async function refreshCalendarEventTitle(todo) {
 
   const startDateTime = new Date(todo.dueAt);
   const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
-  const cleanTitle = cleanGoogleText(todo.text).replace(/^\[완료\]\s*/, '');
-  const summary = todo.status === 'completed' ? '[완료] ' + cleanTitle : cleanTitle;
+  const cleanTitle = cleanGoogleText(todo.text).replace(/^\[?�료\]\s*/, '');
+  const summary = todo.status === 'completed' ? '[?�료] ' + cleanTitle : cleanTitle;
 
   try {
     await googleCalendarApi.events.patch({
@@ -298,7 +298,7 @@ async function syncTasks(localTodos) {
         todo.googleTaskId = res.data.id;
         allLocalIds.add(res.data.id);
         
-        // 캘린더 이벤트 삽입/업데이트 제거 (사용자 요청: 구글 태스크만 들어가고 일정은 들어가지 않도록)
+        // 캘린???�벤???�입/?�데?�트 ?�거 (?�용???�청: 구�? ?�스?�만 ?�어가�??�정?� ?�어가지 ?�도�?
       } catch (err) {
         console.error('Failed to insert new task:', err);
       }
