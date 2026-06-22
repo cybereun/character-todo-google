@@ -1,0 +1,9 @@
+﻿
+C:\tmp\character-todo-runtime\node_modules\.bin\electron.cmd : [28664:0622/142741.533:ERROR:process_singleton_win.cc(46
+5)] Lock file can not be created! Error code: 32
+위치 줄:1 문자:1
++ C:\tmp\character-todo-runtime\node_modules\.bin\electron.cmd C:\tmp\c ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([28664:0622/142... Error code: 32:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
