@@ -922,32 +922,13 @@ geminiConfigBtn?.addEventListener('click', async () => {
     btnContainer.style.cssText = 'display:flex;justify-content:center;gap:8px;';
     
     const linkBtn = document.createElement('button');
-    linkBtn.textContent = '링크';
+    linkBtn.textContent = '발급';
     linkBtn.style.cssText = 'padding:8px 14px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
     linkBtn.onmouseover = () => linkBtn.style.background = '#0e8f6e';
     linkBtn.onmouseout = () => linkBtn.style.background = '#10a37f';
     linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
 
-    const testBtn = document.createElement('button');
-    testBtn.textContent = '테스트';
-    testBtn.style.cssText = 'padding:8px 14px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    testBtn.onmouseover = () => testBtn.style.background = '#d97706';
-    testBtn.onmouseout = () => testBtn.style.background = '#f59e0b';
-    testBtn.onclick = async () => {
-      const testKey = input.value.trim();
-      if (!testKey) { alert('키를 입력하세요.'); return; }
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${testKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
-        });
-        if (res.ok) alert('테스트 성공! 정상적인 키입니다.');
-        else alert('테스트 실패! 유효하지 않은 키입니다.');
-      } catch (e) {
-        alert('테스트 중 오류가 발생했습니다.');
-      }
-    };
+
     
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '취소';
@@ -973,7 +954,6 @@ geminiConfigBtn?.addEventListener('click', async () => {
     };
     
     btnContainer.appendChild(linkBtn);
-    btnContainer.appendChild(testBtn);
     btnContainer.appendChild(cancelBtn);
     btnContainer.appendChild(saveBtn);
     
@@ -1013,32 +993,13 @@ if (window.characterTodo?.onGeminiPromptApiKey) {
     btnContainer.style.cssText = 'display:flex;justify-content:center;gap:8px;';
     
     const linkBtn = document.createElement('button');
-    linkBtn.textContent = '링크';
+    linkBtn.textContent = '발급';
     linkBtn.style.cssText = 'padding:8px 14px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
     linkBtn.onmouseover = () => linkBtn.style.background = '#0e8f6e';
     linkBtn.onmouseout = () => linkBtn.style.background = '#10a37f';
     linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
 
-    const testBtn = document.createElement('button');
-    testBtn.textContent = '테스트';
-    testBtn.style.cssText = 'padding:8px 14px;border:none;background:#f59e0b;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    testBtn.onmouseover = () => testBtn.style.background = '#d97706';
-    testBtn.onmouseout = () => testBtn.style.background = '#f59e0b';
-    testBtn.onclick = async () => {
-      const testKey = input.value.trim();
-      if (!testKey) { alert('키를 입력하세요.'); return; }
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${testKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
-        });
-        if (res.ok) alert('테스트 성공! 정상적인 키입니다.');
-        else alert('테스트 실패! 유효하지 않은 키입니다.');
-      } catch (e) {
-        alert('테스트 중 오류가 발생했습니다.');
-      }
-    };
+
     
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = '취소';
@@ -1062,7 +1023,6 @@ if (window.characterTodo?.onGeminiPromptApiKey) {
     };
     
     btnContainer.appendChild(linkBtn);
-    btnContainer.appendChild(testBtn);
     btnContainer.appendChild(cancelBtn);
     btnContainer.appendChild(saveBtn);
     
