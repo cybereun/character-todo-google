@@ -1,6 +1,6 @@
-const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut, clipboard, Notification } = require('electron');
+const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut, clipboard, Notification, shell } = require('electron');
 
-app.setAppUserModelId('캐릭터 Todo V2.5.0');
+app.setAppUserModelId('캐릭터 Todo V2.5.2');
 
 const fs = require('fs');
 const path = require('path');
@@ -485,4 +485,8 @@ ipcMain.handle('gemini:get-key', () => {
 
 ipcMain.handle('gemini:set-key', (_event, key) => {
   return setGeminiApiKey(key);
+});
+
+ipcMain.handle('app:open-external', (_event, url) => {
+  shell.openExternal(url);
 });
