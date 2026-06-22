@@ -1,7 +1,109 @@
-const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog } = require('electron');
+const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut, clipboard, Notification } = require('electron');
+
+app.setAppUserModelId('캐릭터 Todo V2.5.0');
+
 const fs = require('fs');
 const path = require('path');
 const googleAuth = require('./google-auth');
+
+function getGeminiConfigPath() {
+  return path.join(app.getPath('userData'), 'gemini-config.json');
+}
+
+function getGeminiApiKey() {
+  try {
+    const data = fs.readFileSync(getGeminiConfigPath(), 'utf8');
+    return JSON.parse(data).apiKey || '';
+  } catch {
+    return '';
+  }
+}
+
+function setGeminiApiKey(key) {
+  try {
+    fs.writeFileSync(getGeminiConfigPath(), JSON.stringify({ apiKey: key }), 'utf8');
+    return true;
+  } catch (err) {
+    console.error('Failed to save gemini key:', err);
+    return false;
+  }
+}
+
+function showNotification(title, body) {
+  if (Notification.isSupported()) {
+    new Notification({ title, body, silent: true }).show();
+  }
+}
+
+function registerGlobalShortcuts() {
+  globalShortcut.register('CommandOrControl+Alt+T', async () => {
+    const apiKey = getGeminiApiKey();
+    if (!apiKey) {
+      if (mainWindow) {
+        showMainWindow();
+        mainWindow.webContents.send('gemini:prompt-api-key');
+      } else {
+        showNotification('Character Todo', 'Gemini API 키가 설정되지 않았습니다. 앱에서 설정해주세요.');
+      }
+      return;
+    }
+
+    const image = clipboard.readImage();
+    if (image.isEmpty()) {
+      showNotification('캡처 실패', '클립보드에 이미지가 없습니다.');
+      return;
+    }
+
+    showNotification('분석 중...', '제미나이가 이미지를 분석하고 있습니다.');
+
+    try {
+      const base64Image = image.toPNG().toString('base64');
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [{
+          parts: [
+            { text: "이 이미지에서 '할일(제목)'과 '마감일자(선택사항, 있다면 ISO 8601 YYYY-MM-DD 형식)'를 뽑아줘. 반드시 JSON 형식으로만 응답해. 예시: {\"title\": \"보고서 작성\", \"due\": \"2024-10-25\", \"note\": \"참고사항\"}. 할일 제목만 찾을 수 있으면 due는 null로 해." },
+            {
+              inline_data: {
+                mime_type: "image/png",
+                data: base64Image
+              }
+            }
+          ]
+        }],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
+      };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error(`API 오류: ${res.status}`);
+      }
+
+      const data = await res.json();
+      const text = data.candidates[0].content.parts[0].text;
+      const parsed = JSON.parse(text);
+
+      if (parsed.title) {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('gemini:task-captured', parsed);
+          showNotification('할일 분석 완료', `'${parsed.title}' 추가 중...`);
+        }
+      } else {
+        showNotification('분석 실패', '이미지에서 할일을 찾을 수 없습니다.');
+      }
+    } catch (err) {
+      logError('Gemini API Error', err);
+      showNotification('에러 발생', '제미나이 분석 중 에러가 발생했습니다.');
+    }
+  });
+}
 
 app.disableHardwareAcceleration();
 
@@ -270,6 +372,7 @@ if (!gotSingleInstanceLock) {
       enableAutoLaunch();
       createWindow();
       createTray();
+      registerGlobalShortcuts();
 
       app.on('activate', () => {
         showMainWindow();
@@ -285,6 +388,10 @@ if (!gotSingleInstanceLock) {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
 
 ipcMain.handle('widget:set-expanded', (_event, nextExpanded) => {
@@ -355,4 +462,12 @@ ipcMain.handle('google:show-confirm', async (_event, message) => {
     message: message,
   });
   return result.response === 1;
+});
+
+ipcMain.handle('gemini:get-key', () => {
+  return getGeminiApiKey();
+});
+
+ipcMain.handle('gemini:set-key', (_event, key) => {
+  return setGeminiApiKey(key);
 });
