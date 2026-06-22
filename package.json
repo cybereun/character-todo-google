@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "electron": "31.7.7",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^25.1.8"
   },
   "dependencies": {
     "googleapis": "^173.0.0"
