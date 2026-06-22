@@ -1,4 +1,4 @@
-﻿const widget = document.querySelector('.widget');
+const widget = document.querySelector('.widget');
 const characterButton = document.querySelector('.character-button');
 const todoForm = document.querySelector('.todo-form');
 const todoInput = document.querySelector('.todo-input');
@@ -13,6 +13,7 @@ const undoButton = document.querySelector('.undo-button');
 const burstLayer = document.querySelector('.burst-layer');
 const googleSyncBtn = document.querySelector('.google-sync-btn');
 const bulkDeleteBtn = document.querySelector('.bulk-delete-btn');
+const geminiConfigBtn = document.querySelector('.gemini-config-btn');
 
 let isGoogleLoggedIn = false;
 
@@ -895,4 +896,144 @@ window.setInterval(performBackgroundSync, 5 * 60 * 1000);
 window.addEventListener('focus', () => {
   performBackgroundSync();
 });
+
+geminiConfigBtn?.addEventListener('click', async () => {
+  if (window.characterTodo?.getGeminiKey) {
+    const currentKey = await window.characterTodo.getGeminiKey();
+    
+    // Create custom modal since Electron doesn't support window.prompt
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:300px;text-align:center;font-family:sans-serif;';
+    
+    const title = document.createElement('h3');
+    title.textContent = 'Gemini API 키 설정';
+    title.style.cssText = 'margin-top:0;margin-bottom:15px;color:#333;font-size:16px;';
+    
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.value = currentKey || '';
+    input.placeholder = 'AI Studio 발급 API 키 붙여넣기';
+    input.style.cssText = 'width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:15px;';
+    
+    const btnContainer = document.createElement('div');
+    btnContainer.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '취소';
+    cancelBtn.style.cssText = 'padding:6px 12px;border:none;background:#eee;border-radius:4px;cursor:pointer;';
+    cancelBtn.onclick = () => document.body.removeChild(overlay);
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = '저장';
+    saveBtn.style.cssText = 'padding:6px 12px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;';
+    saveBtn.onclick = async () => {
+      const newKey = input.value.trim();
+      const success = await window.characterTodo.setGeminiKey(newKey);
+      document.body.removeChild(overlay);
+      if (success) {
+        alert('API 키가 정상적으로 저장되었습니다!\n이제 앱 밖에서도 화면 캡처 후 Ctrl+Alt+T 를 누르면 할일이 등록됩니다.');
+      } else {
+        alert('키 저장에 실패했습니다.');
+      }
+    };
+    
+    btnContainer.appendChild(cancelBtn);
+    btnContainer.appendChild(saveBtn);
+    
+    modal.appendChild(title);
+    modal.appendChild(input);
+    modal.appendChild(btnContainer);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    input.focus();
+  }
+});
+
+if (window.characterTodo?.onGeminiPromptApiKey) {
+  window.characterTodo.onGeminiPromptApiKey(async () => {
+    // Create custom modal
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:300px;text-align:center;font-family:sans-serif;';
+    
+    const title = document.createElement('h3');
+    title.textContent = 'Gemini API 키 필요';
+    title.style.cssText = 'margin-top:0;margin-bottom:10px;color:#333;font-size:16px;';
+    
+    const desc = document.createElement('p');
+    desc.textContent = '제미나이 캡처 기능을 사용하려면 API 키(무료)가 필요합니다.';
+    desc.style.cssText = 'font-size:13px;color:#666;margin-bottom:15px;';
+    
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.placeholder = 'API 키 붙여넣기';
+    input.style.cssText = 'width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:15px;';
+    
+    const btnContainer = document.createElement('div');
+    btnContainer.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;';
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = '확인 및 저장';
+    saveBtn.style.cssText = 'padding:6px 12px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;';
+    saveBtn.onclick = async () => {
+      const newKey = input.value.trim();
+      if (newKey !== '') {
+        await window.characterTodo.setGeminiKey(newKey);
+        alert('저장되었습니다! 다시 Ctrl+Alt+T 를 눌러보세요.');
+      }
+      document.body.removeChild(overlay);
+    };
+    
+    btnContainer.appendChild(saveBtn);
+    
+    modal.appendChild(title);
+    modal.appendChild(desc);
+    modal.appendChild(input);
+    modal.appendChild(btnContainer);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    input.focus();
+  });
+}
+
+if (window.characterTodo?.onGeminiTaskCaptured) {
+  window.characterTodo.onGeminiTaskCaptured((data) => {
+    if (!data || !data.title) return;
+    
+    let dueAt = null;
+    if (data.due) {
+      const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(data.due);
+      if (match) {
+        dueAt = new Date(
+          Number(match[1]),
+          Number(match[2]) - 1,
+          Number(match[3]),
+          23, 59
+        ).getTime();
+      }
+    }
+    
+    todos.unshift({
+      id: createId(),
+      text: data.title,
+      status: 'active',
+      dueAt,
+      completedAt: null,
+      updatedAt: Date.now(),
+      subtasks: []
+    });
+    
+    saveTodos();
+    if (!editingId && !subtaskEntryTodoId) {
+      renderTodos();
+    }
+  });
+}
 

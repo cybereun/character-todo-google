@@ -470,10 +470,11 @@ input {
 
 .todo-text {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
   font-size: 14px;
+  line-height: 1.4;
 }
 
 .todo-main {
@@ -539,12 +540,12 @@ input {
 
 .subtask-text {
   min-width: 0;
-  overflow: hidden;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .subtask-row.is-completed .subtask-text {
