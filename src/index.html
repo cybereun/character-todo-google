@@ -42,6 +42,35 @@
         </span>
         <span class="burst-layer" aria-hidden="true"></span>
       </button>
+
+      <!-- Auto Update Modal Dialog -->
+      <div id="update-modal" class="modal-backdrop" style="display:none;">
+        <div class="modal-content update-modal-content">
+          <div class="modal-header">
+            <h3 id="update-modal-title">🚀 새로운 업데이트 안내</h3>
+          </div>
+          <div class="modal-body">
+            <div id="update-info-view">
+              <p id="update-message">새로운 버전(<span id="update-version-tag"></span>)이 출시되었습니다!</p>
+              <p class="update-subtext">지금 업데이트하여 최신 기능과 안정성을 적용해보세요.</p>
+              <div class="modal-actions">
+                <button id="update-cancel-btn" type="button" class="modal-btn secondary">나중에</button>
+                <button id="update-start-btn" type="button" class="modal-btn primary">업데이트 시작</button>
+              </div>
+            </div>
+            <div id="update-progress-view" style="display:none;">
+              <p id="update-status-text">업데이트 다운로드 중... (0%)</p>
+              <div class="progress-bar-container">
+                <div id="update-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+              </div>
+              <div class="progress-details">
+                <span id="update-progress-size">0 MB / 0 MB</span>
+                <span id="update-progress-speed">0 KB/s</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
     <script src="./renderer.js"></script>
   </body>

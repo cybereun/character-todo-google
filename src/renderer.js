@@ -1071,3 +1071,80 @@ if (window.characterTodo?.onGeminiTaskCaptured) {
   });
 }
 
+// Auto Update Renderer Logic
+function initAutoUpdateUI() {
+  if (!window.characterTodo) return;
+
+  const updateModal = document.getElementById('update-modal');
+  const updateVersionTag = document.getElementById('update-version-tag');
+  const updateCancelBtn = document.getElementById('update-cancel-btn');
+  const updateStartBtn = document.getElementById('update-start-btn');
+  const updateInfoView = document.getElementById('update-info-view');
+  const updateProgressView = document.getElementById('update-progress-view');
+  const updateStatusText = document.getElementById('update-status-text');
+  const updateProgressFill = document.getElementById('update-progress-fill');
+  const updateProgressSize = document.getElementById('update-progress-size');
+  const updateProgressSpeed = document.getElementById('update-progress-speed');
+
+  if (!updateModal) return;
+
+  updateCancelBtn.addEventListener('click', () => {
+    updateModal.style.display = 'none';
+  });
+
+  updateStartBtn.addEventListener('click', async () => {
+    updateInfoView.style.display = 'none';
+    updateProgressView.style.display = 'block';
+    updateStatusText.textContent = '다운로드 준비 중...';
+    try {
+      const res = await window.characterTodo.startUpdateDownload();
+      if (!res?.ok) {
+        updateStatusText.textContent = `다운로드 실패: ${res?.error || '알 수 없는 오류'}`;
+      }
+    } catch (err) {
+      updateStatusText.textContent = `다운로드 에러: ${err.message || err}`;
+    }
+  });
+
+  window.characterTodo.onUpdateAvailable((info) => {
+    if (updateVersionTag) {
+      updateVersionTag.textContent = info.version || 'v2.5.4';
+    }
+    updateModal.style.display = 'flex';
+    updateInfoView.style.display = 'block';
+    updateProgressView.style.display = 'none';
+  });
+
+  window.characterTodo.onUpdateProgress((progress) => {
+    updateModal.style.display = 'flex';
+    updateInfoView.style.display = 'none';
+    updateProgressView.style.display = 'block';
+
+    const pct = progress.percent || 0;
+    updateStatusText.textContent = `업데이트 다운로드 중... (${pct}%)`;
+    updateProgressFill.style.width = `${pct}%`;
+
+    const transferredMB = ((progress.transferred || 0) / (1024 * 1024)).toFixed(1);
+    const totalMB = ((progress.total || 0) / (1024 * 1024)).toFixed(1);
+    const speedKB = Math.round((progress.bytesPerSecond || 0) / 1024);
+
+    updateProgressSize.textContent = `${transferredMB} MB / ${totalMB} MB`;
+    updateProgressSpeed.textContent = `${speedKB} KB/s`;
+  });
+
+  window.characterTodo.onUpdateDownloaded(() => {
+    updateModal.style.display = 'flex';
+    updateInfoView.style.display = 'none';
+    updateProgressView.style.display = 'block';
+
+    updateStatusText.textContent = '🎉 다운로드 완료! 업데이트를 설치하고 앱을 재실행합니다...';
+    updateProgressFill.style.width = '100%';
+  });
+
+  window.characterTodo.onUpdateError((error) => {
+    console.error('Update error:', error);
+  });
+}
+
+initAutoUpdateUI();
+

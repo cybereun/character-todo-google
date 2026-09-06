@@ -3,8 +3,7 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%2011-0078D4?style=for-the-badge&logo=windows11&logoColor=white)
 ![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white)
 ![Google API](https://img.shields.io/badge/Google%20API-Integration-4285F4?style=for-the-badge&logo=google&logoColor=white)
-![Status](https://img.shields.io/badge/status-active-5BBF8D?style=for-the-badge)
-![Private](https://img.shields.io/badge/repository-private-6E40C9?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/version-v2.5.4-blue?style=for-the-badge)
 
 복어 캐릭터가 바탕화면 위에서 함께 움직이는 Windows 데스크톱 할일 위젯입니다. (Google Tasks API 연동 버전)
 
@@ -13,6 +12,7 @@
 
 ## 특징
 
+- **실시간 자동 업데이트**: 새 릴리즈 출시 시 앱에서 바로 알림 팝업 및 진행 상황 창(다운로드 %, 용량, 속도)을 통해 업데이트 다운로드 및 재실행 설치가 자동 진행됩니다.
 - **Google Tasks API 연동**: 구글 계정의 할일 목록과 실시간으로 양방향 동기화됩니다.
 - **AI 스마트 입력 (화면 캡처)**: 이 앱에서 캡처한 내용을 바로 할일로 입력하는 단축키는 `Ctrl` + `Alt` + `T` (Mac의 경우 `Cmd` + `Option` + `T`) 입니다.
   

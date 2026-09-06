@@ -1,6 +1,6 @@
 {
   "name": "character-todo-google",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "description": "Character Todo app integrating with Google Gemini AI",
   "main": "src/main.js",
   "author": "Gogo Lebi",
@@ -15,6 +15,13 @@
     "productName": "Character Todo Google",
     "artifactName": "${productName} Setup ${version}.${ext}",
     "copyright": "Copyright © 2026 Gogo Lebi",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "cybereun",
+        "repo": "character-todo-google"
+      }
+    ],
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -66,6 +73,7 @@
     "electron-builder": "^25.1.8"
   },
   "dependencies": {
+    "electron-updater": "^6.3.9",
     "googleapis": "^173.0.0"
   }
 }

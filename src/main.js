@@ -1,6 +1,10 @@
 const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut, clipboard, Notification, shell } = require('electron');
+const { autoUpdater } = require('electron-updater');
 
-app.setAppUserModelId('캐릭터 Todo V2.5.3');
+app.setAppUserModelId('캐릭터 Todo V2.5.4');
+
+autoUpdater.autoDownload = false;
+autoUpdater.allowDowngrade = false;
 
 const fs = require('fs');
 const path = require('path');
@@ -120,9 +124,46 @@ function registerGlobalShortcuts() {
   });
 }
 
-app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('disable-gpu-sandbox');
+
+autoUpdater.on('update-available', (info) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update:available', info);
+  }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update:not-available', info);
+  }
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update:download-progress', {
+      percent: Math.round(progressObj.percent || 0),
+      transferred: progressObj.transferred || 0,
+      total: progressObj.total || 0,
+      bytesPerSecond: progressObj.bytesPerSecond || 0
+    });
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update:downloaded', info);
+  }
+  setTimeout(() => {
+    autoUpdater.quitAndInstall(false, true);
+  }, 1500);
+});
+
+autoUpdater.on('error', (err) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update:error', err?.message || String(err));
+  }
+});
 
 const WINDOW_SIZE = {
   collapsed: { width: 290, height: 230 },
@@ -396,6 +437,14 @@ if (!gotSingleInstanceLock) {
       });
 
       googleAuth.loadCredentials();
+
+      setTimeout(() => {
+        if (app.isPackaged) {
+          autoUpdater.checkForUpdates().catch((err) => {
+            console.error('Auto update check failed:', err);
+          });
+        }
+      }, 3000);
     })
     .catch((error) => {
       logError('Failed to start app.', error);
@@ -491,4 +540,28 @@ ipcMain.handle('gemini:set-key', (_event, key) => {
 
 ipcMain.handle('app:open-external', (_event, url) => {
   shell.openExternal(url);
+});
+
+ipcMain.handle('update:check', async () => {
+  if (!app.isPackaged) return { available: false, dev: true };
+  try {
+    return await autoUpdater.checkForUpdates();
+  } catch (err) {
+    console.error('Check update failed:', err);
+    return { error: err.message };
+  }
+});
+
+ipcMain.handle('update:start-download', async () => {
+  try {
+    await autoUpdater.downloadUpdate();
+    return { ok: true };
+  } catch (err) {
+    console.error('Download update failed:', err);
+    return { ok: false, error: err.message };
+  }
+});
+
+ipcMain.handle('update:quit-and-install', () => {
+  autoUpdater.quitAndInstall(false, true);
 });

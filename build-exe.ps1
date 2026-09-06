@@ -6,7 +6,7 @@ $stagingRoot = "C:\tmp\character-todo-package"
 $builder = Join-Path $builderRoot "node_modules\.bin\electron-builder.cmd"
 
 if (-not (Test-Path $builder)) {
-  npm install --prefix $builderRoot electron-builder@latest electron@31.7.7 --no-audit --no-fund
+  npm install --prefix $builderRoot electron-builder@25.1.8 electron@31.7.7 --no-audit --no-fund
 }
 
 if (Test-Path $stagingRoot) {
