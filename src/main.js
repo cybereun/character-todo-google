@@ -1,7 +1,8 @@
 const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut, clipboard, Notification, shell } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const { UPDATE_CHECK_INTERVAL_MS, serializeUpdateResult } = require('./update-utils');
 
-app.setAppUserModelId('캐릭터 Todo V2.5.7');
+app.setAppUserModelId('캐릭터 Todo V2.5.12');
 
 autoUpdater.autoDownload = false;
 autoUpdater.allowDowngrade = false;
@@ -449,12 +450,17 @@ if (!gotSingleInstanceLock) {
 
       googleAuth.loadCredentials();
 
-      setTimeout(() => {
+      function triggerAutoUpdateCheck() {
         if (app.isPackaged) {
           autoUpdater.checkForUpdates().catch((err) => {
             console.error('Auto update check failed:', err);
           });
         }
+      }
+
+      setTimeout(() => {
+        triggerAutoUpdateCheck();
+        setInterval(triggerAutoUpdateCheck, UPDATE_CHECK_INTERVAL_MS);
       }, 3000);
     })
     .catch((error) => {
@@ -554,12 +560,13 @@ ipcMain.handle('app:open-external', (_event, url) => {
 });
 
 ipcMain.handle('update:check', async () => {
-  if (!app.isPackaged) return { available: false, dev: true };
+  if (!app.isPackaged) return { available: false, dev: true, currentVersion: app.getVersion() };
   try {
-    return await autoUpdater.checkForUpdates();
+    const result = await autoUpdater.checkForUpdates();
+    return serializeUpdateResult(result, app.getVersion());
   } catch (err) {
     console.error('Check update failed:', err);
-    return { error: err.message };
+    return { error: err.message, currentVersion: app.getVersion() };
   }
 });
 

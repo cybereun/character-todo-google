@@ -939,6 +939,8 @@ if (window.characterTodo?.onGeminiTaskCaptured) {
 }
 
 // Auto Update Renderer Logic
+let checkUpdateForUI = null;
+
 function initAutoUpdateUI() {
   if (!window.characterTodo) return;
 
@@ -952,8 +954,64 @@ function initAutoUpdateUI() {
   const updateProgressFill = document.getElementById('update-progress-fill');
   const updateProgressSize = document.getElementById('update-progress-size');
   const updateProgressSpeed = document.getElementById('update-progress-speed');
+  const manualCheckBtn = document.getElementById('manual-check-update-btn');
+  const updateCheckStatus = document.getElementById('update-check-status');
 
   if (!updateModal) return;
+
+  checkUpdateForUI = async (isSilent = false) => {
+    if (!window.characterTodo?.checkUpdate) return;
+    if (!isSilent && updateCheckStatus) {
+      updateCheckStatus.textContent = '확인 중...';
+      updateCheckStatus.style.color = 'var(--muted)';
+    }
+    if (manualCheckBtn) {
+      manualCheckBtn.disabled = true;
+    }
+
+    try {
+      const res = await window.characterTodo.checkUpdate();
+      if (res?.available && res?.version) {
+        if (updateVersionTag) {
+          updateVersionTag.textContent = res.version;
+        }
+        if (updateCheckStatus) {
+          updateCheckStatus.textContent = `새 버전 발견 (${res.version})`;
+          updateCheckStatus.style.color = '#ff7f9c';
+        }
+        updateModal.style.display = 'flex';
+        updateInfoView.style.display = 'block';
+        updateProgressView.style.display = 'none';
+      } else {
+        if (updateCheckStatus) {
+          updateCheckStatus.textContent = '최신 버전 적용됨';
+          updateCheckStatus.style.color = '#5bbf8d';
+        }
+        if (!isSilent) {
+          showSpeechBubble('현재 최신 버전을 사용 중입니다! ✨');
+        }
+      }
+    } catch (err) {
+      if (updateCheckStatus) {
+        updateCheckStatus.textContent = '확인 실패';
+        updateCheckStatus.style.color = '#ff4d4f';
+      }
+      if (!isSilent) {
+        console.error('Update check error:', err);
+      }
+    } finally {
+      if (manualCheckBtn) {
+        manualCheckBtn.disabled = false;
+      }
+    }
+  };
+
+  if (manualCheckBtn) {
+    manualCheckBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      checkUpdateForUI(false);
+    });
+  }
 
   updateCancelBtn.addEventListener('click', () => {
     updateModal.style.display = 'none';
@@ -974,12 +1032,23 @@ function initAutoUpdateUI() {
   });
 
   window.characterTodo.onUpdateAvailable((info) => {
+    if (updateCheckStatus) {
+      updateCheckStatus.textContent = `새 버전 발견 (${info?.version || ''})`;
+      updateCheckStatus.style.color = '#ff7f9c';
+    }
     if (updateVersionTag) {
-      updateVersionTag.textContent = info.version || 'v2.5.4';
+      updateVersionTag.textContent = info?.version || '';
     }
     updateModal.style.display = 'flex';
     updateInfoView.style.display = 'block';
     updateProgressView.style.display = 'none';
+  });
+
+  window.characterTodo.onUpdateNotAvailable(() => {
+    if (updateCheckStatus) {
+      updateCheckStatus.textContent = '최신 버전 적용됨';
+      updateCheckStatus.style.color = '#5bbf8d';
+    }
   });
 
   window.characterTodo.onUpdateProgress((progress) => {
@@ -1107,6 +1176,7 @@ function initSettingsModal() {
       e.stopPropagation();
       await loadGeminiKeyIntoSettings();
       settingsModal.style.display = 'flex';
+      checkUpdateForUI?.(true);
     });
   }
 
