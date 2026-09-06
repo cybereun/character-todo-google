@@ -1146,5 +1146,66 @@ function initAutoUpdateUI() {
   });
 }
 
+// Character Selector Logic
+const charSelectBtn = document.querySelector('.char-select-btn');
+const charModal = document.getElementById('char-modal');
+const charModalCloseBtn = document.getElementById('char-modal-close-btn');
+const charCards = document.querySelectorAll('.char-card');
+const characterCustomImg = document.querySelector('.character-custom');
+
+function applyCharacter(charId) {
+  const selected = charId || 'blowfish';
+  localStorage.setItem('selected-character', selected);
+
+  charCards.forEach((card) => {
+    if (card.dataset.char === selected) {
+      card.classList.add('selected');
+    } else {
+      card.classList.remove('selected');
+    }
+  });
+
+  if (selected === 'blowfish') {
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+  } else {
+    widget.setAttribute('data-character', 'custom');
+    if (characterCustomImg) {
+      characterCustomImg.src = `../assets/char-${selected}.jpg`;
+      characterCustomImg.style.display = 'block';
+    }
+  }
+}
+
+function initCharacterSelector() {
+  const saved = localStorage.getItem('selected-character') || 'blowfish';
+  applyCharacter(saved);
+
+  if (charSelectBtn && charModal) {
+    charSelectBtn.addEventListener('click', () => {
+      charModal.style.display = 'flex';
+    });
+  }
+
+  if (charModalCloseBtn && charModal) {
+    charModalCloseBtn.addEventListener('click', () => {
+      charModal.style.display = 'none';
+    });
+  }
+
+  charCards.forEach((card) => {
+    card.addEventListener('click', () => {
+      const charId = card.dataset.char;
+      applyCharacter(charId);
+      if (charModal) charModal.style.display = 'none';
+    });
+  });
+}
+
 initAutoUpdateUI();
+initCharacterSelector();
+
 
