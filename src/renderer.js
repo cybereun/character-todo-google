@@ -13,7 +13,7 @@ const undoButton = document.querySelector('.undo-button');
 const burstLayer = document.querySelector('.burst-layer');
 const googleSyncBtn = document.querySelector('.google-sync-btn');
 const bulkDeleteBtn = document.querySelector('.bulk-delete-btn');
-const geminiConfigBtn = document.querySelector('.gemini-config-btn');
+const settingsBtn = document.querySelector('.settings-btn');
 
 let isGoogleLoggedIn = false;
 
@@ -1146,10 +1146,48 @@ function initAutoUpdateUI() {
   });
 }
 
-// Character Selector Logic
-const charSelectBtn = document.querySelector('.char-select-btn');
-const charModal = document.getElementById('char-modal');
-const charModalCloseBtn = document.getElementById('char-modal-close-btn');
+// Speech Bubble Logic
+const speechBubble = document.querySelector('.speech-bubble');
+const speechText = document.querySelector('.speech-text');
+let speechTimer = null;
+
+const encouragementMessages = [
+  '오늘도 화이팅이에요! ✨',
+  '할일 완료! 정말 대단해요! 🎉',
+  '하나씩 차근차근 해봐요! 💪',
+  '오늘 하루도 응원할게요! 🌟',
+  '완벽해요! 쉬어가면서 하세요 ☕',
+  '멋져요! 오늘도 리듬타서 쓱쓱~ 🎵',
+  '기분 좋은 하루 되세요! 🌸'
+];
+
+function showSpeechBubble(message) {
+  if (!speechBubble || !speechText) return;
+  const msg = message || encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+  speechText.textContent = msg;
+  speechBubble.style.display = 'block';
+
+  if (speechTimer) clearTimeout(speechTimer);
+  speechTimer = setTimeout(() => {
+    speechBubble.style.display = 'none';
+  }, 3500);
+}
+
+if (characterButton) {
+  characterButton.addEventListener('click', () => {
+    if (widget.dataset.hasOverdue === 'true') {
+      showSpeechBubble('지남 할일이 있어요! 함께 정리해볼까요? ⏰');
+    } else {
+      showSpeechBubble();
+    }
+  });
+}
+
+// Integrated Settings Modal & Character Selector Logic
+const settingsModal = document.getElementById('settings-modal');
+const settingsModalCloseBtn = document.getElementById('settings-modal-close-btn');
+const settingsGeminiKeyInput = document.getElementById('settings-gemini-key');
+const settingsGeminiSaveBtn = document.getElementById('settings-gemini-save-btn');
 const charCards = document.querySelectorAll('.char-card');
 const characterCustomImg = document.querySelector('.character-custom');
 
@@ -1174,25 +1212,52 @@ function applyCharacter(charId) {
   } else {
     widget.setAttribute('data-character', 'custom');
     if (characterCustomImg) {
-      characterCustomImg.src = `../assets/char-${selected}.jpg`;
+      characterCustomImg.src = `../assets/char-${selected}.png`;
       characterCustomImg.style.display = 'block';
     }
   }
 }
 
-function initCharacterSelector() {
-  const saved = localStorage.getItem('selected-character') || 'blowfish';
-  applyCharacter(saved);
+async function loadGeminiKeyIntoSettings() {
+  if (window.characterTodo?.getGeminiKey && settingsGeminiKeyInput) {
+    try {
+      const key = await window.characterTodo.getGeminiKey();
+      settingsGeminiKeyInput.value = key || '';
+    } catch {
+      // ignore
+    }
+  }
+}
 
-  if (charSelectBtn && charModal) {
-    charSelectBtn.addEventListener('click', () => {
-      charModal.style.display = 'flex';
+function initSettingsModal() {
+  const savedChar = localStorage.getItem('selected-character') || 'blowfish';
+  applyCharacter(savedChar);
+
+  if (settingsBtn && settingsModal) {
+    settingsBtn.addEventListener('click', async () => {
+      await loadGeminiKeyIntoSettings();
+      settingsModal.style.display = 'flex';
     });
   }
 
-  if (charModalCloseBtn && charModal) {
-    charModalCloseBtn.addEventListener('click', () => {
-      charModal.style.display = 'none';
+  if (settingsModalCloseBtn && settingsModal) {
+    settingsModalCloseBtn.addEventListener('click', () => {
+      settingsModal.style.display = 'none';
+    });
+  }
+
+  if (settingsGeminiSaveBtn && settingsGeminiKeyInput) {
+    settingsGeminiSaveBtn.addEventListener('click', async () => {
+      const key = settingsGeminiKeyInput.value.trim();
+      if (window.characterTodo?.setGeminiKey) {
+        const ok = await window.characterTodo.setGeminiKey(key);
+        if (ok) {
+          showSpeechBubble('Gemini API 키가 저장되었습니다! 🔑');
+        } else {
+          showSpeechBubble('API 키 저장 실패!');
+        }
+      }
+      settingsModal.style.display = 'none';
     });
   }
 
@@ -1200,12 +1265,13 @@ function initCharacterSelector() {
     card.addEventListener('click', () => {
       const charId = card.dataset.char;
       applyCharacter(charId);
-      if (charModal) charModal.style.display = 'none';
+      showSpeechBubble('새로운 캐릭터로 변경되었어요! 🎨');
     });
   });
 }
 
 initAutoUpdateUI();
-initCharacterSelector();
+initSettingsModal();
+
 
 

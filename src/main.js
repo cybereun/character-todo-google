@@ -1,7 +1,7 @@
 const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut, clipboard, Notification, shell } = require('electron');
 const { autoUpdater } = require('electron-updater');
 
-app.setAppUserModelId('캐릭터 Todo V2.5.5');
+app.setAppUserModelId('캐릭터 Todo V2.5.6');
 
 autoUpdater.autoDownload = false;
 autoUpdater.allowDowngrade = false;
