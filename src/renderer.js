@@ -1127,7 +1127,11 @@ const settingsGeminiSaveBtn = document.getElementById('settings-gemini-save-btn'
 const settingsGeminiLinkBtn = document.getElementById('settings-gemini-link-btn');
 const settingsGeminiUrl = document.getElementById('settings-gemini-url');
 const charCards = document.querySelectorAll('.char-card');
-const characterCustomImg = document.querySelector('.character-custom');
+const characterSlimImg = document.querySelector('.character-slim');
+const characterFullImg = document.querySelector('.character-full');
+const characterSlimBlinkImg = document.querySelector('.character-slim-blink');
+const characterFullBlinkImg = document.querySelector('.character-full-blink');
+const characterAngryImg = document.querySelector('.character-angry');
 
 function applyCharacter(charId) {
   const selected = charId || 'blowfish';
@@ -1147,6 +1151,22 @@ function applyCharacter(charId) {
       characterCustomImg.style.display = 'none';
       characterCustomImg.src = '';
     }
+    if (characterSlimImg) characterSlimImg.src = '../assets/character-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/character-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/character-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/character-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/character-angry.png';
+  } else if (selected === 'penguin') {
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/penguin-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/penguin-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/penguin-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/penguin-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/penguin-angry.png';
   } else {
     widget.setAttribute('data-character', 'custom');
     if (characterCustomImg) {
