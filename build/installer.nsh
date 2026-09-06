@@ -1,3 +1,7 @@
+!macro customInit
+  nsExec::Exec 'taskkill /F /IM "Character Todo Google.exe"'
+!macroend
+
 !macro customInstall
   SetShellVarContext current
   DeleteRegValue HKCU "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers" "$INSTDIR\Character Todo.exe"

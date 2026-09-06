@@ -156,7 +156,17 @@ autoUpdater.on('update-downloaded', (info) => {
     mainWindow.webContents.send('update:downloaded', info);
   }
   setTimeout(() => {
+    try {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.destroy();
+      }
+    } catch {
+      // ignore
+    }
     autoUpdater.quitAndInstall(false, true);
+    setTimeout(() => {
+      app.exit(0);
+    }, 500);
   }, 1500);
 });
 
@@ -564,5 +574,15 @@ ipcMain.handle('update:start-download', async () => {
 });
 
 ipcMain.handle('update:quit-and-install', () => {
+  try {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.destroy();
+    }
+  } catch {
+    // ignore
+  }
   autoUpdater.quitAndInstall(false, true);
+  setTimeout(() => {
+    app.exit(0);
+  }, 500);
 });
