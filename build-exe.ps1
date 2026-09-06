@@ -24,7 +24,10 @@ $items = @(
 )
 
 foreach ($item in $items) {
-  Copy-Item -LiteralPath (Join-Path $root $item) -Destination $stagingRoot -Recurse -Force
+  $itemPath = Join-Path $root $item
+  if (Test-Path $itemPath) {
+    Copy-Item -LiteralPath $itemPath -Destination $stagingRoot -Recurse -Force
+  }
 }
 
 & $builder --projectDir $stagingRoot --win nsis --x64
