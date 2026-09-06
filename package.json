@@ -13,7 +13,7 @@
   "build": {
     "appId": "com.gogolebi.characterTodoGoogle",
     "productName": "Character Todo Google",
-    "artifactName": "${productName} Setup ${version}.${ext}",
+    "artifactName": "Character-Todo-Google-Setup-${version}.${ext}",
     "copyright": "Copyright © 2026 Gogo Lebi",
     "publish": [
       {
