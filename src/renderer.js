@@ -897,143 +897,10 @@ window.addEventListener('focus', () => {
   performBackgroundSync();
 });
 
-geminiConfigBtn?.addEventListener('click', async () => {
-  if (window.characterTodo?.getGeminiKey) {
-    const currentKey = await window.characterTodo.getGeminiKey();
-    
-    // Create custom modal since Electron doesn't support window.prompt
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:360px;text-align:center;font-family:sans-serif;';
-    
-    const title = document.createElement('h3');
-    title.textContent = 'Gemini API 키 설정';
-    title.style.cssText = 'margin-top:0;margin-bottom:15px;color:#333;font-size:16px;';
-    
-    const input = document.createElement('input');
-    input.type = 'password';
-    input.value = currentKey || '';
-    input.placeholder = 'AI Studio 발급 API 키 붙여넣기';
-    input.style.cssText = 'width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:15px;';
-    
-    const btnContainer = document.createElement('div');
-    btnContainer.style.cssText = 'display:flex;justify-content:center;gap:8px;';
-    
-    const linkBtn = document.createElement('button');
-    linkBtn.textContent = '발급';
-    linkBtn.style.cssText = 'padding:8px 14px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    linkBtn.onmouseover = () => linkBtn.style.background = '#0e8f6e';
-    linkBtn.onmouseout = () => linkBtn.style.background = '#10a37f';
-    linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
-
-
-    
-    const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = '취소';
-    cancelBtn.style.cssText = 'padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    cancelBtn.onmouseover = () => cancelBtn.style.background = '#d1d5db';
-    cancelBtn.onmouseout = () => cancelBtn.style.background = '#e5e7eb';
-    cancelBtn.onclick = () => document.body.removeChild(overlay);
-    
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = '저장';
-    saveBtn.style.cssText = 'padding:8px 14px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    saveBtn.onmouseover = () => saveBtn.style.background = '#005a9e';
-    saveBtn.onmouseout = () => saveBtn.style.background = '#0078d4';
-    saveBtn.onclick = async () => {
-      const newKey = input.value.trim();
-      const success = await window.characterTodo.setGeminiKey(newKey);
-      document.body.removeChild(overlay);
-      if (success) {
-        alert('API 키가 정상적으로 저장되었습니다!\n이제 앱 밖에서도 화면 캡처 후 Ctrl+Alt+T 를 누르면 할일이 등록됩니다.');
-      } else {
-        alert('키 저장에 실패했습니다.');
-      }
-    };
-    
-    btnContainer.appendChild(linkBtn);
-    btnContainer.appendChild(cancelBtn);
-    btnContainer.appendChild(saveBtn);
-    
-    modal.appendChild(title);
-    modal.appendChild(input);
-    modal.appendChild(btnContainer);
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    
-    input.focus();
-  }
-});
-
 if (window.characterTodo?.onGeminiPromptApiKey) {
   window.characterTodo.onGeminiPromptApiKey(async () => {
-    // Create custom modal
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    
-    const modal = document.createElement('div');
-    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);width:80%;max-width:360px;text-align:center;font-family:sans-serif;';
-    
-    const title = document.createElement('h3');
-    title.textContent = 'Gemini API 키 필요';
-    title.style.cssText = 'margin-top:0;margin-bottom:10px;color:#333;font-size:16px;';
-    
-    const desc = document.createElement('p');
-    desc.textContent = '제미나이 캡처 기능을 사용하려면 API 키(무료)가 필요합니다.';
-    desc.style.cssText = 'font-size:13px;color:#666;margin-bottom:15px;';
-    
-    const input = document.createElement('input');
-    input.type = 'password';
-    input.placeholder = 'API 키 붙여넣기';
-    input.style.cssText = 'width:100%;padding:8px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px;margin-bottom:15px;';
-    
-    const btnContainer = document.createElement('div');
-    btnContainer.style.cssText = 'display:flex;justify-content:center;gap:8px;';
-    
-    const linkBtn = document.createElement('button');
-    linkBtn.textContent = '발급';
-    linkBtn.style.cssText = 'padding:8px 14px;border:none;background:#10a37f;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    linkBtn.onmouseover = () => linkBtn.style.background = '#0e8f6e';
-    linkBtn.onmouseout = () => linkBtn.style.background = '#10a37f';
-    linkBtn.onclick = () => window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
-
-
-    
-    const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = '취소';
-    cancelBtn.style.cssText = 'padding:8px 14px;border:none;background:#e5e7eb;color:#374151;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    cancelBtn.onmouseover = () => cancelBtn.style.background = '#d1d5db';
-    cancelBtn.onmouseout = () => cancelBtn.style.background = '#e5e7eb';
-    cancelBtn.onclick = () => document.body.removeChild(overlay);
-
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = '저장';
-    saveBtn.style.cssText = 'padding:8px 14px;border:none;background:#0078d4;color:#fff;border-radius:4px;cursor:pointer;white-space:nowrap;font-size:14px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:background 0.2s;';
-    saveBtn.onmouseover = () => saveBtn.style.background = '#005a9e';
-    saveBtn.onmouseout = () => saveBtn.style.background = '#0078d4';
-    saveBtn.onclick = async () => {
-      const newKey = input.value.trim();
-      if (newKey !== '') {
-        await window.characterTodo.setGeminiKey(newKey);
-        alert('저장되었습니다! 다시 Ctrl+Alt+T 를 눌러보세요.');
-      }
-      document.body.removeChild(overlay);
-    };
-    
-    btnContainer.appendChild(linkBtn);
-    btnContainer.appendChild(cancelBtn);
-    btnContainer.appendChild(saveBtn);
-    
-    modal.appendChild(title);
-    modal.appendChild(desc);
-    modal.appendChild(input);
-    modal.appendChild(btnContainer);
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    
-    input.focus();
+    await loadGeminiKeyIntoSettings();
+    if (settingsModal) settingsModal.style.display = 'flex';
   });
 }
 
@@ -1234,15 +1101,25 @@ function initSettingsModal() {
   applyCharacter(savedChar);
 
   if (settingsBtn && settingsModal) {
-    settingsBtn.addEventListener('click', async () => {
+    settingsBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
       await loadGeminiKeyIntoSettings();
       settingsModal.style.display = 'flex';
     });
   }
 
   if (settingsModalCloseBtn && settingsModal) {
-    settingsModalCloseBtn.addEventListener('click', () => {
+    settingsModalCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       settingsModal.style.display = 'none';
+    });
+  }
+
+  if (settingsModal) {
+    settingsModal.addEventListener('click', (e) => {
+      if (e.target === settingsModal) {
+        settingsModal.style.display = 'none';
+      }
     });
   }
 
