@@ -1132,6 +1132,7 @@ const characterFullImg = document.querySelector('.character-full');
 const characterSlimBlinkImg = document.querySelector('.character-slim-blink');
 const characterFullBlinkImg = document.querySelector('.character-full-blink');
 const characterAngryImg = document.querySelector('.character-angry');
+const characterCustomImg = document.querySelector('.character-custom');
 
 function applyCharacter(charId) {
   const selected = charId || 'blowfish';
