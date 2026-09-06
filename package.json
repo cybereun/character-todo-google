@@ -1,6 +1,6 @@
 {
   "name": "character-todo-google",
-  "version": "2.5.10",
+  "version": "2.5.11",
   "description": "Character Todo app integrating with Google Gemini AI",
   "main": "src/main.js",
   "private": true,
