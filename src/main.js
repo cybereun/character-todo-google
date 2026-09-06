@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut,
 const { autoUpdater } = require('electron-updater');
 const { UPDATE_CHECK_INTERVAL_MS, serializeUpdateResult } = require('./update-utils');
 
-app.setAppUserModelId('캐릭터 Todo V2.5.13');
+app.setAppUserModelId('캐릭터 Todo V2.5.14');
 
 autoUpdater.autoDownload = false;
 autoUpdater.allowDowngrade = false;
@@ -158,16 +158,19 @@ autoUpdater.on('update-downloaded', (info) => {
   }
   setTimeout(() => {
     try {
+      if (tray) {
+        tray.destroy();
+        tray = null;
+      }
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.destroy();
       }
     } catch {
       // ignore
     }
-    autoUpdater.quitAndInstall(false, true);
-    setTimeout(() => {
-      app.exit(0);
-    }, 500);
+    setImmediate(() => {
+      autoUpdater.quitAndInstall(false, true);
+    });
   }, 1500);
 });
 
@@ -582,14 +585,17 @@ ipcMain.handle('update:start-download', async () => {
 
 ipcMain.handle('update:quit-and-install', () => {
   try {
+    if (tray) {
+      tray.destroy();
+      tray = null;
+    }
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.destroy();
     }
   } catch {
     // ignore
   }
-  autoUpdater.quitAndInstall(false, true);
-  setTimeout(() => {
-    app.exit(0);
-  }, 500);
+  setImmediate(() => {
+    autoUpdater.quitAndInstall(false, true);
+  });
 });
