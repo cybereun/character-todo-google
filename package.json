@@ -15,6 +15,9 @@
     "productName": "Character Todo Google",
     "artifactName": "Character-Todo-Google-Setup-${version}.${ext}",
     "copyright": "Copyright © 2026 Gogo Lebi",
+    "win": {
+      "verifyUpdateCodeSignature": false
+    },
     "publish": [
       {
         "provider": "github",
