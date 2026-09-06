@@ -1055,6 +1055,8 @@ const settingsModal = document.getElementById('settings-modal');
 const settingsModalCloseBtn = document.getElementById('settings-modal-close-btn');
 const settingsGeminiKeyInput = document.getElementById('settings-gemini-key');
 const settingsGeminiSaveBtn = document.getElementById('settings-gemini-save-btn');
+const settingsGeminiLinkBtn = document.getElementById('settings-gemini-link-btn');
+const settingsGeminiUrl = document.getElementById('settings-gemini-url');
 const charCards = document.querySelectorAll('.char-card');
 const characterCustomImg = document.querySelector('.character-custom');
 
@@ -1137,6 +1139,15 @@ function initSettingsModal() {
       settingsModal.style.display = 'none';
     });
   }
+
+  const openAiStudio = (e) => {
+    e.preventDefault();
+    if (window.characterTodo?.openExternal) {
+      window.characterTodo.openExternal('https://aistudio.google.com/app/apikey');
+    }
+  };
+  if (settingsGeminiLinkBtn) settingsGeminiLinkBtn.addEventListener('click', openAiStudio);
+  if (settingsGeminiUrl) settingsGeminiUrl.addEventListener('click', openAiStudio);
 
   charCards.forEach((card) => {
     card.addEventListener('click', () => {

@@ -73,12 +73,20 @@
           </div>
           <div class="modal-body">
             <div class="settings-section">
-              <h4 class="settings-section-title">🔑 Gemini API 키 설정</h4>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h4 class="settings-section-title" style="margin:0;">🔑 Gemini API 키 설정</h4>
+                <button id="settings-gemini-link-btn" type="button" class="modal-link-btn" title="구글 AI 스튜디오에서 무료 API 키 발급받기">API 키 발급받기 ↗</button>
+              </div>
               <div class="settings-api-row">
                 <input id="settings-gemini-key" type="password" placeholder="Gemini API Key 입력" class="modal-input" />
                 <button id="settings-gemini-save-btn" type="button" class="modal-btn primary">저장</button>
               </div>
-              <p class="settings-tip">Google AI Studio에서 발급받은 키를 입력해주세요.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <p class="settings-tip" style="margin:0;">Google AI Studio에서 무료 발급받은 키를 입력해주세요.</p>
+              </div>
+              <div style="margin-top:4px;">
+                <a id="settings-gemini-url" href="#" style="font-size:11px; color:var(--blue); text-decoration:underline; cursor:pointer;" title="구글 AI 스튜디오 페이지 열기">https://aistudio.google.com/app/apikey</a>
+              </div>
             </div>
 
             <hr class="settings-divider" />
@@ -133,7 +141,7 @@
 
             <div class="settings-section settings-info-section">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:12px; color:var(--muted);">앱 버전: <strong id="settings-app-version">v2.5.8</strong></span>
+                <span style="font-size:12px; color:var(--muted);">앱 버전: <strong id="settings-app-version">v2.5.9</strong></span>
                 <span style="font-size:11px; color:#5bbf8d;">최신 버전 적용됨</span>
               </div>
             </div>
