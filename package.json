@@ -3,7 +3,6 @@
   "version": "2.5.6",
   "description": "Character Todo app integrating with Google Gemini AI",
   "main": "src/main.js",
-  "author": "Gogo Lebi",
   "private": true,
   "scripts": {
     "start": "powershell -ExecutionPolicy Bypass -File ./run-app.ps1",
@@ -14,9 +13,19 @@
     "appId": "com.gogolebi.characterTodoGoogle",
     "productName": "Character Todo Google",
     "artifactName": "Character-Todo-Google-Setup-${version}.${ext}",
-    "copyright": "Copyright © 2026 Gogo Lebi",
+    "copyright": "Copyright © 2026",
     "win": {
-      "verifyUpdateCodeSignature": false
+      "verifyUpdateCodeSignature": false,
+      "requestedExecutionLevel": "asInvoker",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
     },
     "publish": [
       {
@@ -37,19 +46,6 @@
       "README.md",
       "credentials.json"
     ],
-    "win": {
-      "publisherName": "Gogo Lebi",
-      "requestedExecutionLevel": "asInvoker",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "build/icon.ico"
-    },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
