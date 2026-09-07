@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('characterTodo', {
   onGeminiTaskCaptured: (callback) => ipcRenderer.on('gemini:task-captured', (_event, data) => callback(data)),
   onGeminiPromptApiKey: (callback) => ipcRenderer.on('gemini:prompt-api-key', callback),
   openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
+  getAppVersion: () => ipcRenderer.invoke('app:get-version'),
   checkUpdate: () => ipcRenderer.invoke('update:check'),
   startUpdateDownload: () => ipcRenderer.invoke('update:start-download'),
   quitAndInstall: () => ipcRenderer.invoke('update:quit-and-install'),

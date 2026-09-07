@@ -956,6 +956,13 @@ function initAutoUpdateUI() {
   const updateProgressSpeed = document.getElementById('update-progress-speed');
   const manualCheckBtn = document.getElementById('manual-check-update-btn');
   const updateCheckStatus = document.getElementById('update-check-status');
+  const settingsAppVersion = document.getElementById('settings-app-version');
+
+  if (settingsAppVersion && window.characterTodo.getAppVersion) {
+    window.characterTodo.getAppVersion().then((version) => {
+      if (version) settingsAppVersion.textContent = `v${version}`;
+    });
+  }
 
   if (!updateModal) return;
 

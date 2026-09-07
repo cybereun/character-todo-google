@@ -562,6 +562,8 @@ ipcMain.handle('app:open-external', (_event, url) => {
   shell.openExternal(url);
 });
 
+ipcMain.handle('app:get-version', () => app.getVersion());
+
 ipcMain.handle('update:check', async () => {
   if (!app.isPackaged) return { available: false, dev: true, currentVersion: app.getVersion() };
   try {
