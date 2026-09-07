@@ -1136,6 +1136,7 @@ const characterCustomImg = document.querySelector('.character-custom');
 
 function applyCharacter(charId) {
   const selected = charId || 'blowfish';
+  widget.dataset.selectedCharacter = selected;
   localStorage.setItem('selected-character', selected);
 
   charCards.forEach((card) => {

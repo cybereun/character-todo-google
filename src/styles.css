@@ -643,6 +643,14 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   transform: scale(1);
 }
 
+.widget[data-selected-character="robot"][data-has-todos="true"]:not([data-has-overdue="true"]) .character-full {
+  animation: robot-full-base-blink 5.8s steps(1, end) infinite;
+}
+
+.widget[data-selected-character="robot"][data-has-todos="true"]:not([data-has-overdue="true"]) .character-full-blink {
+  animation: robot-full-blink 5.8s steps(1, end) infinite;
+}
+
 .widget.is-window-changing .character-slim-blink,
 .widget.is-window-changing .character-full-blink {
   opacity: 0;
@@ -718,6 +726,34 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 @keyframes image-blink {
+  0%,
+  90%,
+  94%,
+  100% {
+    opacity: 0;
+  }
+
+  91%,
+  93% {
+    opacity: 1;
+  }
+}
+
+@keyframes robot-full-base-blink {
+  0%,
+  90%,
+  94%,
+  100% {
+    opacity: 1;
+  }
+
+  91%,
+  93% {
+    opacity: 0;
+  }
+}
+
+@keyframes robot-full-blink {
   0%,
   90%,
   94%,
