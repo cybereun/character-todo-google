@@ -1168,6 +1168,104 @@ function applyCharacter(charId) {
     if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/penguin-slim-blink.png';
     if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/penguin-full-blink.png';
     if (characterAngryImg) characterAngryImg.src = '../assets/penguin-angry.png';
+  } else if (selected === 'cat') {
+    // The supplied cat sheet is split into the same five states as the blowfish.
+    // Keep it on the standard rendering path so todos, blinking, and overdue
+    // animation behave exactly like the default character.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/cat-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/cat-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/cat-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/cat-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/cat-angry.png';
+  } else if (selected === 'bunny') {
+    // The supplied rabbit images use the same five states as the blowfish.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/bunny-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/bunny-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/bunny-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/bunny-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/bunny-angry.png';
+  } else if (selected === 'bear') {
+    // The supplied bear images use the same five states as the blowfish.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/bear-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/bear-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/bear-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/bear-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/bear-angry.png';
+  } else if (selected === 'girl') {
+    // The supplied girl images use the same five states as the blowfish.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/girl-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/girl-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/girl-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/girl-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/girl-angry.png';
+  } else if (selected === 'robot') {
+    // The generated robot images use the same five states as the blowfish.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/robot-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/robot-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/robot-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/robot-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/robot-angry.png';
+  } else if (selected === 'ai') {
+    // The supplied AI assistant images use the same five states as the blowfish.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/ai-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/ai-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/ai-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/ai-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/ai-angry.png';
+  } else if (selected === 'bee') {
+    // The supplied bee images use the same five states as the blowfish.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/bee-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/bee-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/bee-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/bee-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/bee-angry.png';
+  } else if (selected === 'boy') {
+    // The supplied boy images use the same five states as the blowfish.
+    widget.removeAttribute('data-character');
+    if (characterCustomImg) {
+      characterCustomImg.style.display = 'none';
+      characterCustomImg.src = '';
+    }
+    if (characterSlimImg) characterSlimImg.src = '../assets/boy-slim.png';
+    if (characterFullImg) characterFullImg.src = '../assets/boy-full.png';
+    if (characterSlimBlinkImg) characterSlimBlinkImg.src = '../assets/boy-slim-blink.png';
+    if (characterFullBlinkImg) characterFullBlinkImg.src = '../assets/boy-full-blink.png';
+    if (characterAngryImg) characterAngryImg.src = '../assets/boy-angry.png';
   } else {
     widget.setAttribute('data-character', 'custom');
     if (characterCustomImg) {

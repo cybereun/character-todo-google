@@ -3,7 +3,7 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%2011-0078D4?style=for-the-badge&logo=windows11&logoColor=white)
 ![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white)
 ![Google API](https://img.shields.io/badge/Google%20API-Integration-4285F4?style=for-the-badge&logo=google&logoColor=white)
-![Version](https://img.shields.io/badge/version-v2.5.4-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-v2.6.17-blue?style=for-the-badge)
 
 복어 캐릭터가 바탕화면 위에서 함께 움직이는 Windows 데스크톱 할일 위젯입니다. (Google Tasks API 연동 버전)
 
@@ -77,6 +77,11 @@ npm run lint:js
 - 시작 실패나 단일 인스턴스 잠금 오류는 사용자 데이터 폴더의 `error.log`에 기록됩니다.
 
 ## 릴리즈 노트
+
+### v2.6.17
+
+- 고양이, 토끼, 곰돌이, 꿀벌, 소년, 소녀, AI 비서, 로봇 캐릭터에 기본·할일 있음·깜빡임·화남 5상태 이미지 적용
+- 기존 펭귄과 복어 캐릭터 동작 유지
 
 ### v2.5.3
 
