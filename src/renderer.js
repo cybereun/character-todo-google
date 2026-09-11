@@ -554,6 +554,14 @@ function formatCalendarDate(date) {
   }).format(date);
 }
 
+function applyCalendarDateToDueInput(dateValue) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return;
+
+  const existingTime = dueInput.value.match(/T(\d{2}:\d{2})/)?.[1] || '09:00';
+  dueInput.value = `${dateValue}T${existingTime}`;
+  updateDueButton();
+}
+
 function renderCalendarYearPicker() {
   if (!calendarYearPicker) return;
 
@@ -1200,7 +1208,7 @@ dueInput.addEventListener('change', updateDueButton);
 
 function updateDueButton() {
   dueButton.classList.toggle('is-set', Boolean(dueInput.value));
-  dueButton.title = dueInput.value ? 마감  : '마감 날짜와 시간';
+  dueButton.title = dueInput.value ? '마감 날짜와 시간 설정됨' : '마감 날짜와 시간';
 }
 
 function formatInputDue(value) {
@@ -1313,7 +1321,9 @@ calendarPanel?.addEventListener('click', (event) => {
   if (dateValue) {
     const [year, month, day] = dateValue.split('-').map(Number);
     calendarSelectedDay = new Date(year, month - 1, day);
+    applyCalendarDateToDueInput(dateValue);
     renderCalendar();
+    todoInput.focus();
   }
 });
 

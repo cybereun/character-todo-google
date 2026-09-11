@@ -2784,3 +2784,41 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 
 
+/* Calendar mode layout: give the todo controls room without letting the ribbon overflow. */
+.widget[data-calendar-mode="true"] .todo-panel {
+  width: 392px;
+}
+
+.widget[data-calendar-mode="true"] .calendar-panel {
+  left: 420px;
+  right: auto;
+  width: 410px;
+}
+
+.widget[data-calendar-mode="true"] .todo-toolbar {
+  flex-wrap: nowrap;
+}
+
+.widget[data-calendar-mode="true"] .view-toggle,
+.widget[data-calendar-mode="true"] .google-sync-btn,
+.widget[data-calendar-mode="true"] .settings-btn,
+.widget[data-calendar-mode="true"] .bulk-delete-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.widget[data-calendar-mode="true"] .todo-count {
+  flex: 0 0 auto;
+}
+
+.widget[data-calendar-mode="true"] .action-ribbon {
+  overflow: hidden;
+}
+
+.widget[data-calendar-mode="true"] .ribbon-button {
+  flex: 1 1 0;
+  min-width: 0;
+  gap: 3px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
