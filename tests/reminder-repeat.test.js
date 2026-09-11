@@ -41,7 +41,7 @@ test('schedule ribbon is available with colorful styling', () => {
   assert.match(html, /class="schedule-panel"/);
   assert.match(styles, /\.schedule-panel \{[\s\S]*?overflow: hidden;/);
   assert.match(styles, /\.schedule-help \{[\s\S]*?overflow-wrap: anywhere;/);
-  assert.match(styles, /\.character-anchor \.speech-bubble \{[\s\S]*?left: -96px;[\s\S]*?bottom: 124px;[\s\S]*?z-index: 12;/);
+  assert.match(styles, /\.character-anchor \.speech-bubble \{[\s\S]*?left: -112px;[\s\S]*?bottom: 124px;[\s\S]*?z-index: 12;/);
   assert.match(styles, /\.speech-text \{[\s\S]*?white-space: normal;[\s\S]*?overflow-wrap: anywhere;/);
   assert.match(styles, /\.todo-item:not\(\.is-done-pending\) \.done-button::before \{[\s\S]*?border: 2px solid rgba\(218, 225, 231, 0\.96\);/);
   assert.match(styles, /\.action-ribbon \.ribbon-button\.schedule-ribbon-button \{[\s\S]*?linear-gradient/);

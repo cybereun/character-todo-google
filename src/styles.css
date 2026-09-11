@@ -1518,7 +1518,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 .widget[data-calendar-mode="true"] .calendar-panel {
-  left: 412px;
+  left: 396px;
   right: auto;
 }
 
@@ -2448,7 +2448,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 /* Speech Bubble Styles */
 .character-anchor .speech-bubble {
   position: absolute;
-  left: -96px;
+  left: -112px;
   bottom: 124px;
   right: auto;
   width: 168px;
