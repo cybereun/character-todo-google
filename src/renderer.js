@@ -14,6 +14,29 @@ const burstLayer = document.querySelector('.burst-layer');
 const googleSyncBtn = document.querySelector('.google-sync-btn');
 const bulkDeleteBtn = document.querySelector('.bulk-delete-btn');
 const settingsBtn = document.querySelector('.settings-btn');
+const calendarRibbonButton = document.querySelector('.calendar-ribbon-button');
+const calendarPanel = document.querySelector('.calendar-panel');
+const calendarCloseButton = document.querySelector('.calendar-close-button');
+const calendarMonthLabel = document.querySelector('.calendar-month-label');
+const calendarYearPicker = document.querySelector('.calendar-year-picker');
+const calendarGrid = document.querySelector('.calendar-grid');
+const calendarSelectedDate = document.querySelector('.calendar-selected-date');
+const calendarSelectedCount = document.querySelector('.calendar-selected-count');
+const calendarTaskList = document.querySelector('.calendar-task-list');
+const searchRibbonButton = document.querySelector('.search-ribbon-button');
+const searchPanel = document.querySelector('.search-panel');
+const searchCloseButton = document.querySelector('.search-close-button');
+const searchInput = document.querySelector('.search-input');
+const searchClearButton = document.querySelector('.search-clear-button');
+const filterButtons = document.querySelectorAll('.filter-button');
+const searchSummary = document.querySelector('.search-summary');
+const scheduleRibbonButton = document.querySelector('.schedule-ribbon-button');
+const schedulePanel = document.querySelector('.schedule-panel');
+const scheduleCloseButton = document.querySelector('.schedule-close-button');
+const scheduleTodoSelect = document.querySelector('.schedule-todo-select');
+const scheduleSelectionSummary = document.querySelector('.schedule-selection-summary');
+const notificationSelect = document.querySelector('.notification-select');
+const repeatSelect = document.querySelector('.repeat-select');
 
 let isGoogleLoggedIn = false;
 
@@ -35,6 +58,25 @@ let dragState = null;
 let audioContext = null;
 let undoTodoId = null;
 let undoToastTimer = null;
+let calendarMode = false;
+let calendarMonth = new Date();
+let calendarSelectedDay = new Date();
+let calendarYearPickerOpen = false;
+let searchMode = false;
+let searchQuery = '';
+let filterMode = 'all';
+let scheduleMode = false;
+let selectedScheduleTodoId = null;
+
+const dueSoonWindowMs = 72 * 60 * 60 * 1000;
+const notificationMinutes = [5, 10, 30, 60, 1440];
+const repeatLabels = {
+  none: '반복 안 함',
+  daily: '매일',
+  weekdays: '평일',
+  weekly: '매주',
+  monthly: '매월'
+};
 
 const pendingCompletions = new Map();
 
@@ -60,6 +102,16 @@ function normalizeDueAt(value) {
   return Number.isFinite(timestamp) && timestamp >= minimumValidDueAt ? timestamp : null;
 }
 
+function normalizeNotificationMinutes(value) {
+  if (value === null || value === undefined || value === '' || value === 'none') return null;
+  const minutes = Number(value);
+  return notificationMinutes.includes(minutes) ? minutes : null;
+}
+
+function normalizeRepeat(value) {
+  return Object.hasOwn(repeatLabels, value) ? value : 'none';
+}
+
 function normalizeSubtask(subtask) {
   return {
     id: subtask.id || createId(),
@@ -75,6 +127,9 @@ function normalizeTodo(todo) {
     text: cleanDisplayText(todo.text),
     status: todo.status === 'completed' ? 'completed' : 'active',
     dueAt: normalizeDueAt(todo.dueAt),
+    notificationMinutes: normalizeNotificationMinutes(todo.notificationMinutes),
+    repeat: normalizeRepeat(todo.repeat),
+    lastNotifiedAt: Number.isFinite(todo.lastNotifiedAt) ? todo.lastNotifiedAt : null,
     completedAt: todo.completedAt || null,
     updatedAt: todo.updatedAt || Date.now(),
     googleTaskId: todo.googleTaskId || null,
@@ -178,6 +233,18 @@ function escapeHtml(value) {
 async function setExpanded(nextExpanded) {
   if (expanded === nextExpanded) return;
 
+  if (!nextExpanded && calendarMode) {
+    await setCalendarMode(false);
+  }
+
+  if (!nextExpanded && searchMode) {
+    await setSearchMode(false);
+  }
+
+  if (!nextExpanded && scheduleMode) {
+    await setScheduleMode(false);
+  }
+
   expanded = nextExpanded;
   characterButton.setAttribute('aria-label', expanded ? '할일창 닫기' : '할일창 열기');
   widget.classList.add('is-window-changing');
@@ -215,37 +282,405 @@ function isOverdue(todo) {
   return todo.status !== 'completed' && Number.isFinite(todo.dueAt) && todo.dueAt <= Date.now();
 }
 
-function getVisibleTodos() {
-  if (showingCompleted) {
+function getSearchableTodoText(todo) {
+  const subtasks = Array.isArray(todo.subtasks) ? todo.subtasks.map((subtask) => subtask.text) : [];
+  return [todo.text, ...subtasks].filter(Boolean).join(' ').toLocaleLowerCase();
+}
+
+function isDueToday(todo) {
+  return todo.status !== 'completed'
+    && Number.isFinite(todo.dueAt)
+    && todoDateKey(todo) === calendarDateKey(new Date());
+}
+
+function isDueSoon(todo) {
+  if (todo.status === 'completed' || !Number.isFinite(todo.dueAt)) return false;
+  const remaining = todo.dueAt - Date.now();
+  return remaining > 0 && remaining <= dueSoonWindowMs;
+}
+
+function matchesSearchFilter(todo) {
+  if (filterMode === 'today') return isDueToday(todo);
+  if (filterMode === 'active') return todo.status !== 'completed';
+  if (filterMode === 'completed') return todo.status === 'completed';
+  if (filterMode === 'due-soon') return isDueSoon(todo);
+  if (filterMode === 'overdue') return isOverdue(todo);
+  return true;
+}
+
+function getBaseVisibleTodos() {
+  if (filterMode === 'completed' || showingCompleted) {
     return getCompletedTodos().filter((todo) => !pendingCompletions.has(todo.id));
   }
 
   return todos.filter((todo) => todo.status !== 'completed' || pendingCompletions.has(todo.id));
 }
 
+function getVisibleTodos() {
+  const query = searchQuery.trim().toLocaleLowerCase();
+  return getBaseVisibleTodos().filter((todo) => {
+    const matchesQuery = !query || getSearchableTodoText(todo).includes(query);
+    return matchesQuery && matchesSearchFilter(todo);
+  });
+}
+
+function renderSearchPanel() {
+  if (!searchPanel) return;
+
+  searchPanel.setAttribute('aria-hidden', String(!searchMode));
+  searchRibbonButton?.setAttribute('aria-pressed', String(searchMode));
+  filterButtons.forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.filter === filterMode));
+  });
+
+  const matchedCount = getVisibleTodos().length;
+  const baseCount = getBaseVisibleTodos().length;
+  const hasCriteria = Boolean(searchQuery.trim()) || filterMode !== 'all';
+  if (searchSummary) searchSummary.textContent = hasCriteria ? `${matchedCount}개 찾음` : `${baseCount}개 표시 중`;
+}
+
+function formatNotificationLabel(minutes) {
+  if (!Number.isFinite(minutes)) return '알림 없음';
+  if (minutes === 1440) return '하루 전';
+  if (minutes >= 60) return `${minutes / 60}시간 전`;
+  return `${minutes}분 전`;
+}
+
+function formatScheduleLabel(todo) {
+  const labels = [];
+  if (Number.isFinite(todo.notificationMinutes)) labels.push(`알림 ${formatNotificationLabel(todo.notificationMinutes)}`);
+  if (todo.repeat && todo.repeat !== 'none') labels.push(repeatLabels[todo.repeat]);
+  return labels.join(' · ');
+}
+
+function getSchedulableTodos() {
+  return todos.filter((todo) => todo.status !== 'completed');
+}
+
+function getSelectedScheduleTodo() {
+  const schedulableTodos = getSchedulableTodos();
+  if (!schedulableTodos.some((todo) => todo.id === selectedScheduleTodoId)) {
+    selectedScheduleTodoId = schedulableTodos[0]?.id || null;
+  }
+  return schedulableTodos.find((todo) => todo.id === selectedScheduleTodoId) || null;
+}
+
+function renderSchedulePanel() {
+  if (!schedulePanel) return;
+
+  schedulePanel.setAttribute('aria-hidden', String(!scheduleMode));
+  scheduleRibbonButton?.setAttribute('aria-pressed', String(scheduleMode));
+
+  const schedulableTodos = getSchedulableTodos();
+  const selectedTodo = getSelectedScheduleTodo();
+  if (scheduleTodoSelect) {
+    scheduleTodoSelect.innerHTML = schedulableTodos.length
+      ? schedulableTodos.map((todo) => `<option value="${todo.id}"${todo.id === selectedScheduleTodoId ? ' selected' : ''}>${escapeHtml(todo.text)}</option>`).join('')
+      : '<option value="">설정할 진행 중 할일이 없어요</option>';
+    scheduleTodoSelect.disabled = !selectedTodo;
+  }
+
+  const hasDueDate = Boolean(selectedTodo?.dueAt);
+  if (notificationSelect) {
+    notificationSelect.value = selectedTodo ? (Number.isFinite(selectedTodo.notificationMinutes) ? String(selectedTodo.notificationMinutes) : 'none') : 'none';
+    notificationSelect.disabled = !selectedTodo || !hasDueDate;
+  }
+  if (repeatSelect) {
+    repeatSelect.value = selectedTodo?.repeat || 'none';
+    repeatSelect.disabled = !selectedTodo || !hasDueDate;
+  }
+
+  if (scheduleSelectionSummary) {
+    scheduleSelectionSummary.textContent = selectedTodo
+      ? hasDueDate
+        ? `${formatDueLabel(selectedTodo)}${formatScheduleLabel(selectedTodo) ? ` · ${formatScheduleLabel(selectedTodo)}` : ''}`
+        : '알림과 반복을 사용하려면 먼저 마감 날짜를 지정하세요.'
+      : '할일을 먼저 추가하면 알림과 반복을 설정할 수 있어요.';
+  }
+}
+
+function updateSelectedSchedule(field, value) {
+  const selectedTodo = getSelectedScheduleTodo();
+  if (!selectedTodo) return;
+
+  if (field === 'notificationMinutes') {
+    selectedTodo.notificationMinutes = normalizeNotificationMinutes(value);
+  }
+  if (field === 'repeat') {
+    selectedTodo.repeat = normalizeRepeat(value);
+  }
+  selectedTodo.lastNotifiedAt = null;
+  selectedTodo.updatedAt = Date.now();
+  void saveTodos();
+  renderTodos();
+}
+
+async function setScheduleMode(nextScheduleMode) {
+  if (scheduleMode === nextScheduleMode) return;
+
+  scheduleMode = Boolean(nextScheduleMode);
+  widget.dataset.scheduleMode = String(scheduleMode);
+
+  if (scheduleMode) {
+    calendarMode = false;
+    searchMode = false;
+    widget.dataset.calendarMode = 'false';
+    widget.dataset.searchMode = 'false';
+    calendarPanel?.setAttribute('aria-hidden', 'true');
+    searchPanel?.setAttribute('aria-hidden', 'true');
+    calendarRibbonButton?.setAttribute('aria-pressed', 'false');
+    searchRibbonButton?.setAttribute('aria-pressed', 'false');
+    getSelectedScheduleTodo();
+  }
+
+  renderTodos();
+
+  if (window.characterTodo?.setScheduleMode) {
+    await window.characterTodo.setScheduleMode(scheduleMode);
+  }
+  if (scheduleMode) scheduleTodoSelect?.focus();
+}
+
+async function setSearchMode(nextSearchMode) {
+  if (searchMode === nextSearchMode) return;
+
+  searchMode = Boolean(nextSearchMode);
+  widget.dataset.searchMode = String(searchMode);
+
+  if (searchMode && calendarMode) {
+    calendarMode = false;
+    widget.dataset.calendarMode = 'false';
+    calendarPanel?.setAttribute('aria-hidden', 'true');
+    calendarRibbonButton?.setAttribute('aria-pressed', 'false');
+  }
+
+  if (searchMode && scheduleMode) {
+    scheduleMode = false;
+    widget.dataset.scheduleMode = 'false';
+    schedulePanel?.setAttribute('aria-hidden', 'true');
+    scheduleRibbonButton?.setAttribute('aria-pressed', 'false');
+  }
+
+  if (!searchMode) {
+    searchQuery = '';
+    filterMode = 'all';
+    showingCompleted = false;
+    if (searchInput) searchInput.value = '';
+  }
+
+  renderTodos();
+
+  if (window.characterTodo?.setSearchMode) {
+    await window.characterTodo.setSearchMode(searchMode);
+  }
+
+  if (searchMode) searchInput?.focus();
+}
+
+function setSearchFilter(nextFilter) {
+  const allowedFilters = ['all', 'today', 'active', 'completed', 'due-soon', 'overdue'];
+  if (!allowedFilters.includes(nextFilter)) return;
+
+  filterMode = nextFilter;
+  showingCompleted = filterMode === 'completed';
+  editingId = null;
+  subtaskEntryTodoId = null;
+  renderTodos();
+}
+
+function calendarDateKey(date) {
+  const pad = (value) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function todoDateKey(todo) {
+  return Number.isFinite(todo.dueAt) ? calendarDateKey(new Date(todo.dueAt)) : null;
+}
+
+function getTodosForCalendarDate(date) {
+  const key = calendarDateKey(date);
+  return todos
+    .filter((todo) => todoDateKey(todo) === key)
+    .sort((a, b) => (a.dueAt || 0) - (b.dueAt || 0));
+}
+
+function formatCalendarDate(date) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short'
+  }).format(date);
+}
+
+function renderCalendarYearPicker() {
+  if (!calendarYearPicker) return;
+
+  const currentYear = calendarMonth.getFullYear();
+  const years = Array.from({ length: 11 }, (_value, index) => currentYear - 5 + index);
+  calendarYearPicker.innerHTML = years.map((year) => `
+    <button class="calendar-year-option${year === currentYear ? ' is-selected' : ''}" type="button" role="option" data-calendar-year="${year}" aria-selected="${year === currentYear}">
+      ${year}년
+    </button>
+  `).join('');
+  calendarYearPicker.hidden = !calendarYearPickerOpen;
+  calendarMonthLabel?.setAttribute('aria-expanded', String(calendarYearPickerOpen));
+}
+
+function closeCalendarYearPicker() {
+  if (!calendarYearPickerOpen) return;
+  calendarYearPickerOpen = false;
+  renderCalendarYearPicker();
+}
+
+function toggleCalendarYearPicker() {
+  calendarYearPickerOpen = !calendarYearPickerOpen;
+  renderCalendarYearPicker();
+}
+
+function selectCalendarYear(value) {
+  const year = Number(value);
+  if (!Number.isInteger(year)) return;
+
+  calendarMonth = new Date(year, calendarMonth.getMonth(), 1);
+  calendarSelectedDay = new Date(year, calendarMonth.getMonth(), 1);
+  closeCalendarYearPicker();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  if (!calendarGrid || !calendarMonthLabel || !calendarTaskList) return;
+
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayKey = calendarDateKey(new Date());
+  const selectedKey = calendarDateKey(calendarSelectedDay);
+
+  calendarMonthLabel.textContent = `${year}년 ${month + 1}월`;
+  renderCalendarYearPicker();
+
+  const cells = [];
+  for (let index = 0; index < firstWeekday; index += 1) {
+    cells.push('<span class="calendar-day is-empty" aria-hidden="true"></span>');
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const date = new Date(year, month, day);
+    const key = calendarDateKey(date);
+    const dayTodos = getTodosForCalendarDate(date);
+    const classes = [
+      'calendar-day',
+      key === todayKey ? 'is-today' : '',
+      key === selectedKey ? 'is-selected' : '',
+      dayTodos.length > 0 ? 'has-todos' : ''
+    ].filter(Boolean).join(' ');
+
+    cells.push(`
+      <button class="${classes}" type="button" role="gridcell" data-calendar-date="${key}" aria-label="${year}년 ${month + 1}월 ${day}일${dayTodos.length ? ` 할일 ${dayTodos.length}개` : ''}" aria-pressed="${key === selectedKey}">
+        <span class="calendar-day-number">${day}</span>
+        ${dayTodos.length > 0 ? `<span class="calendar-day-dot" aria-hidden="true"></span>` : ''}
+      </button>
+    `);
+  }
+
+  while (cells.length < 42) {
+    cells.push('<span class="calendar-day is-empty" aria-hidden="true"></span>');
+  }
+
+  calendarGrid.innerHTML = cells.join('');
+
+  const selectedTodos = getTodosForCalendarDate(calendarSelectedDay);
+  if (calendarSelectedDate) calendarSelectedDate.textContent = formatCalendarDate(calendarSelectedDay);
+  if (calendarSelectedCount) calendarSelectedCount.textContent = selectedTodos.length ? `${selectedTodos.length}개` : '없음';
+
+  calendarTaskList.innerHTML = selectedTodos.length
+    ? selectedTodos.map((todo) => `
+        <li class="calendar-task-item${todo.status === 'completed' ? ' is-completed' : ''}">
+          <span class="calendar-task-status" aria-hidden="true">${todo.status === 'completed' ? '✓' : ''}</span>
+          <span class="calendar-task-text" title="${escapeHtml(todo.text)}">${escapeHtml(todo.text)}</span>
+          <span class="calendar-task-time">${todo.dueAt ? new Intl.DateTimeFormat('ko-KR', { hour: '2-digit', minute: '2-digit' }).format(new Date(todo.dueAt)) : ''}</span>
+        </li>
+      `).join('')
+    : '<li class="calendar-empty-task">이 날짜에는 예정된 할일이 없어요.</li>';
+}
+
+function shiftCalendarMonth(amount) {
+  closeCalendarYearPicker();
+  calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + amount, 1);
+  calendarSelectedDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+  renderCalendar();
+}
+
+function selectCalendarToday() {
+  closeCalendarYearPicker();
+  const today = new Date();
+  calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  calendarSelectedDay = today;
+  renderCalendar();
+}
+
+async function setCalendarMode(nextCalendarMode) {
+  if (calendarMode === nextCalendarMode) return;
+
+  calendarMode = nextCalendarMode;
+  widget.dataset.calendarMode = String(calendarMode);
+  if (calendarPanel) calendarPanel.setAttribute('aria-hidden', String(!calendarMode));
+  if (calendarRibbonButton) calendarRibbonButton.setAttribute('aria-pressed', String(calendarMode));
+
+  if (calendarMode) {
+    searchMode = false;
+    scheduleMode = false;
+    searchQuery = '';
+    filterMode = 'all';
+    showingCompleted = false;
+    if (searchInput) searchInput.value = '';
+    widget.dataset.searchMode = 'false';
+    searchPanel?.setAttribute('aria-hidden', 'true');
+    searchRibbonButton?.setAttribute('aria-pressed', 'false');
+    schedulePanel?.setAttribute('aria-hidden', 'true');
+    scheduleRibbonButton?.setAttribute('aria-pressed', 'false');
+    widget.dataset.scheduleMode = 'false';
+    selectCalendarToday();
+  }
+
+  renderTodos();
+
+  if (window.characterTodo?.setCalendarMode) {
+    await window.characterTodo.setCalendarMode(calendarMode);
+  }
+}
+
 function renderTodos() {
   const activeCount = getActiveTodos().length;
   const completedCount = getCompletedTodos().length;
   const overdueCount = getActiveTodos().filter(isOverdue).length;
+  const visibleTodos = getVisibleTodos();
+  const hasSearchCriteria = Boolean(searchQuery.trim()) || filterMode !== 'all';
+  const hasActiveSearch = searchMode && hasSearchCriteria;
   widget.dataset.hasTodos = String(activeCount > 0);
   widget.dataset.hasOverdue = String(overdueCount > 0);
   if (showingCompleted) subtaskEntryTodoId = null;
   viewToggle.textContent = showingCompleted ? '할일 목록 보기' : '완료 목록 보기';
   viewToggle.setAttribute('aria-pressed', String(showingCompleted));
-  todoCount.textContent = showingCompleted
-    ? `완료 ${completedCount}개`
-    : overdueCount > 0
-      ? `할일 ${activeCount}개 · 지남 ${overdueCount}개`
-      : `할일 ${activeCount}개`;
+  todoCount.textContent = hasActiveSearch
+    ? `검색 ${visibleTodos.length}개`
+    : showingCompleted
+      ? `완료 ${completedCount}개`
+      : overdueCount > 0
+        ? `할일 ${activeCount}개 · 지남 ${overdueCount}개`
+        : `할일 ${activeCount}개`;
   if (googleSyncBtn) googleSyncBtn.style.display = showingCompleted ? 'none' : 'block';
   if (bulkDeleteBtn) bulkDeleteBtn.style.display = showingCompleted ? 'block' : 'none';
 
-  todoList.innerHTML = getVisibleTodos()
+  todoList.dataset.emptyMessage = hasActiveSearch && todos.length > 0 ? '조건에 맞는 할일이 없어요' : '비어 있어요';
+  todoList.innerHTML = visibleTodos
     .map((todo) => {
       const text = escapeHtml(todo.text);
       const pending = pendingCompletions.has(todo.id);
       const overdue = isOverdue(todo);
       const dueLabel = formatDueLabel(todo);
+      const scheduleLabel = formatScheduleLabel(todo);
       const subtaskList = renderSubtasks(todo);
 
       if (!showingCompleted && todo.id === editingId) {
@@ -278,6 +713,7 @@ function renderTodos() {
           <span class="todo-main">
             <span class="todo-text" title="${text}">${text}</span>
             ${dueLabel ? `<span class="due-label">${dueLabel}</span>` : ''}
+            ${scheduleLabel ? `<span class="schedule-label">${scheduleLabel}</span>` : ''}
             ${subtaskList}
           </span>
           <button class="icon-button subtask-button" type="button" data-action="add-subtask" title="서브할일 추가" aria-label="서브할일 추가">+</button>
@@ -298,6 +734,10 @@ function renderTodos() {
   if (subtaskInput) {
     subtaskInput.focus();
   }
+
+  renderSearchPanel();
+  renderSchedulePanel();
+  if (calendarMode) renderCalendar();
 }
 
 function renderSubtasks(todo) {
@@ -361,6 +801,9 @@ function addTodo(text) {
     text: trimmed,
     status: 'active',
     dueAt,
+    notificationMinutes: null,
+    repeat: 'none',
+    lastNotifiedAt: null,
     completedAt: null,
     updatedAt: Date.now(),
     subtasks: []
@@ -389,12 +832,60 @@ function parseDueInput(value) {
   return Number.isFinite(timestamp) ? timestamp : null;
 }
 
+function advanceRepeatDate(date, repeat) {
+  const next = new Date(date);
+
+  if (repeat === 'daily') {
+    next.setDate(next.getDate() + 1);
+    return next;
+  }
+
+  if (repeat === 'weekdays') {
+    do {
+      next.setDate(next.getDate() + 1);
+    } while (next.getDay() === 0 || next.getDay() === 6);
+    return next;
+  }
+
+  if (repeat === 'weekly') {
+    next.setDate(next.getDate() + 7);
+    return next;
+  }
+
+  if (repeat === 'monthly') {
+    const targetDay = next.getDate();
+    next.setDate(1);
+    next.setMonth(next.getMonth() + 1);
+    const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+    next.setDate(Math.min(targetDay, lastDay));
+    return next;
+  }
+
+  return null;
+}
+
+function getNextRepeatDueAt(dueAt, repeat) {
+  if (!Number.isFinite(dueAt) || !repeat || repeat === 'none') return null;
+
+  let next = new Date(dueAt);
+  let attempts = 0;
+  while (next.getTime() <= Date.now() && attempts < 520) {
+    next = advanceRepeatDate(next, repeat);
+    if (!next) return null;
+    attempts += 1;
+  }
+
+  return next.getTime();
+}
+
 function updateTodo(id, text, dueValue) {
   const trimmed = text.trim();
   if (!trimmed) return;
   const dueAt = parseDueInput(dueValue);
 
-  todos = todos.map((todo) => (todo.id === id ? { ...todo, text: trimmed, dueAt, updatedAt: Date.now() } : todo));
+  todos = todos.map((todo) => (todo.id === id
+    ? { ...todo, text: trimmed, dueAt, lastNotifiedAt: null, updatedAt: Date.now() }
+    : todo));
   editingId = null;
   saveTodos();
   renderTodos();
@@ -497,11 +988,28 @@ function completeTodo(id) {
   if (!todo || todo.status === 'completed' || pendingCompletions.has(id)) return;
   if (subtaskEntryTodoId === id) subtaskEntryTodoId = null;
 
+  const nextDueAt = getNextRepeatDueAt(todo.dueAt, todo.repeat);
+
   todos = todos.map((item) =>
     item.id === id
       ? { ...item, status: 'completed', completedAt: Date.now(), updatedAt: Date.now() }
       : item
   );
+
+  if (Number.isFinite(nextDueAt)) {
+    todos.unshift({
+      ...todo,
+      id: createId(),
+      status: 'active',
+      dueAt: nextDueAt,
+      completedAt: null,
+      lastNotifiedAt: null,
+      updatedAt: Date.now(),
+      googleTaskId: null,
+      googleEventId: null,
+      subtasks: []
+    });
+  }
 
   const completion = {
     effectTimer: null,
@@ -672,9 +1180,94 @@ function formatDateTimeLocal(timestamp) {
 
 viewToggle.addEventListener('click', () => {
   showingCompleted = !showingCompleted;
+  filterMode = showingCompleted ? 'completed' : 'all';
   editingId = null;
   subtaskEntryTodoId = null;
   renderTodos();
+});
+
+searchRibbonButton?.addEventListener('click', () => {
+  void setSearchMode(!searchMode);
+});
+
+searchCloseButton?.addEventListener('click', () => {
+  void setSearchMode(false);
+});
+
+scheduleRibbonButton?.addEventListener('click', () => {
+  void setScheduleMode(!scheduleMode);
+});
+
+scheduleCloseButton?.addEventListener('click', () => {
+  void setScheduleMode(false);
+});
+
+scheduleTodoSelect?.addEventListener('change', () => {
+  selectedScheduleTodoId = scheduleTodoSelect.value || null;
+  renderSchedulePanel();
+});
+
+notificationSelect?.addEventListener('change', () => {
+  updateSelectedSchedule('notificationMinutes', notificationSelect.value);
+});
+
+repeatSelect?.addEventListener('change', () => {
+  updateSelectedSchedule('repeat', repeatSelect.value);
+});
+
+searchInput?.addEventListener('input', () => {
+  searchQuery = searchInput.value;
+  renderTodos();
+});
+
+searchClearButton?.addEventListener('click', () => {
+  searchQuery = '';
+  if (searchInput) searchInput.value = '';
+  renderTodos();
+  searchInput?.focus();
+});
+
+filterButtons.forEach((button) => {
+  button.addEventListener('click', () => setSearchFilter(button.dataset.filter));
+});
+
+calendarRibbonButton?.addEventListener('click', () => {
+  void setCalendarMode(!calendarMode);
+});
+
+calendarCloseButton?.addEventListener('click', () => {
+  void setCalendarMode(false);
+});
+
+calendarPanel?.addEventListener('click', (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+
+  const action = button.dataset.calendarAction;
+  if (action === 'toggle-year-picker') {
+    toggleCalendarYearPicker();
+    return;
+  }
+  if (button.dataset.calendarYear) {
+    selectCalendarYear(button.dataset.calendarYear);
+    return;
+  }
+  if (action === 'previous') shiftCalendarMonth(-1);
+  if (action === 'next') shiftCalendarMonth(1);
+  if (action === 'today') selectCalendarToday();
+
+  const dateValue = button.dataset.calendarDate;
+  if (dateValue) {
+    const [year, month, day] = dateValue.split('-').map(Number);
+    calendarSelectedDay = new Date(year, month - 1, day);
+    renderCalendar();
+  }
+});
+
+document.addEventListener('click', (event) => {
+  if (calendarYearPickerOpen && !event.target.closest('.calendar-navigation')) {
+    closeCalendarYearPicker();
+  }
 });
 
 undoButton.addEventListener('click', () => {
@@ -792,6 +1385,36 @@ characterButton.addEventListener('pointercancel', () => {
   dragState = null;
 });
 
+function getNotificationAt(todo) {
+  if (todo.status === 'completed' || !Number.isFinite(todo.dueAt) || !Number.isFinite(todo.notificationMinutes)) return null;
+  return todo.dueAt - todo.notificationMinutes * 60 * 1000;
+}
+
+async function checkDueNotifications() {
+  const now = Date.now();
+  let changed = false;
+
+  todos.forEach((todo) => {
+    const notificationAt = getNotificationAt(todo);
+    const stillRelevant = Number.isFinite(todo.dueAt) && now <= todo.dueAt + 30 * 60 * 1000;
+    if (!Number.isFinite(notificationAt) || now < notificationAt || !stillRelevant || todo.lastNotifiedAt === notificationAt) return;
+
+    todo.lastNotifiedAt = notificationAt;
+    changed = true;
+    if (window.characterTodo?.showNotification) {
+      void window.characterTodo.showNotification({
+        title: '할일 알림',
+        body: `${todo.text} · ${formatDueLabel(todo)}`
+      });
+    }
+  });
+
+  if (changed) {
+    await saveTodos();
+    renderTodos();
+  }
+}
+
 let isSyncing = false;
 
 async function performBackgroundSync() {
@@ -884,9 +1507,42 @@ bulkDeleteBtn?.addEventListener('click', async () => {
   }
 });
 
-void initTodos();
+const characterBlinkIntervalMs = 5800;
+const characterBlinkDurationMs = 180;
+let characterBlinkInterval = null;
+let characterBlinkTimer = null;
+
+function canBlinkCharacter() {
+  return widget.dataset.character !== 'custom'
+    && widget.dataset.hasOverdue !== 'true'
+    && !widget.classList.contains('is-window-changing');
+}
+
+function triggerCharacterBlink() {
+  if (!canBlinkCharacter()) return;
+
+  widget.classList.add('is-blinking');
+  if (characterBlinkTimer) window.clearTimeout(characterBlinkTimer);
+  characterBlinkTimer = window.setTimeout(() => {
+    widget.classList.remove('is-blinking');
+    characterBlinkTimer = null;
+  }, characterBlinkDurationMs);
+}
+
+function startCharacterBlink() {
+  if (characterBlinkInterval) window.clearInterval(characterBlinkInterval);
+  characterBlinkInterval = window.setInterval(triggerCharacterBlink, characterBlinkIntervalMs);
+}
+
+void initTodos().then(() => {
+  startCharacterBlink();
+  void checkDueNotifications();
+});
 window.setInterval(() => {
   if (!editingId && !subtaskEntryTodoId) renderTodos();
+}, 15000);
+window.setInterval(() => {
+  void checkDueNotifications();
 }, 15000);
 
 // Background auto sync every 5 minutes
@@ -926,6 +1582,9 @@ if (window.characterTodo?.onGeminiTaskCaptured) {
       text: data.title,
       status: 'active',
       dueAt,
+      notificationMinutes: null,
+      repeat: 'none',
+      lastNotifiedAt: null,
       completedAt: null,
       updatedAt: Date.now(),
       subtasks: []
@@ -1140,11 +1799,32 @@ const characterSlimBlinkImg = document.querySelector('.character-slim-blink');
 const characterFullBlinkImg = document.querySelector('.character-full-blink');
 const characterAngryImg = document.querySelector('.character-angry');
 const characterCustomImg = document.querySelector('.character-custom');
+const calendarCharacterImg = document.querySelector('.calendar-character-img');
+
+const calendarCharacterAssets = {
+  blowfish: '../assets/character-full.png',
+  penguin: '../assets/penguin-full.png',
+  cat: '../assets/cat-full.png',
+  bunny: '../assets/bunny-full.png',
+  bear: '../assets/bear-full.png',
+  girl: '../assets/girl-full.png',
+  boy: '../assets/boy-full.png',
+  robot: '../assets/robot-full.png',
+  ai: '../assets/ai-full.png',
+  bee: '../assets/bee-full.png'
+};
+
+function updateCalendarCharacter(charId) {
+  if (!calendarCharacterImg) return;
+
+  calendarCharacterImg.src = calendarCharacterAssets[charId] || `../assets/char-${charId}.png`;
+}
 
 function applyCharacter(charId) {
   const selected = charId || 'blowfish';
   widget.dataset.selectedCharacter = selected;
   localStorage.setItem('selected-character', selected);
+  updateCalendarCharacter(selected);
 
   charCards.forEach((card) => {
     if (card.dataset.char === selected) {

@@ -39,10 +39,122 @@
           <button class="bulk-delete-btn" type="button" style="display:none; margin-left:4px; font-size: 12px; cursor: pointer; border: 1px solid #ff4d4f; background: #fff; border-radius: 4px; padding: 2px 6px; color: #ff4d4f;">완료 일괄 삭제</button>
         </div>
         <ul class="todo-list" aria-live="polite"></ul>
+        <div class="action-ribbon" aria-label="빠른 기능">
+          <button class="ribbon-button search-ribbon-button" type="button" aria-pressed="false" title="검색 및 필터 열기">
+            <span class="ribbon-icon" aria-hidden="true">🔍</span>
+            <span>검색</span>
+          </button>
+          <button class="ribbon-button calendar-ribbon-button" type="button" aria-pressed="false" title="달력 열기">
+            <span class="ribbon-icon" aria-hidden="true">📅</span>
+            <span>달력</span>
+          </button>
+          <button class="ribbon-button schedule-ribbon-button" type="button" aria-pressed="false" title="알림 설정 열기">
+            <span class="ribbon-icon" aria-hidden="true">⏰</span>
+            <span>알림</span>
+          </button>
+        </div>
         <div class="undo-toast" role="status" aria-live="polite">
           <span class="undo-message">완료됨</span>
           <button class="undo-button" type="button">실행 취소</button>
         </div>
+      </section>
+
+      <section class="search-panel" aria-label="검색 및 필터" aria-hidden="true">
+        <div class="search-panel-heading">
+          <div>
+            <span class="search-eyebrow">할일 찾기</span>
+            <h2 class="search-title">검색</h2>
+          </div>
+          <button class="search-close-button" type="button" title="검색 닫기" aria-label="검색 닫기">&times;</button>
+        </div>
+        <div class="search-input-row">
+          <span class="search-input-icon" aria-hidden="true">🔍</span>
+          <input class="search-input" type="search" maxlength="80" placeholder="할일 검색" aria-label="할일 검색" />
+          <button class="search-clear-button" type="button" title="검색 초기화" aria-label="검색 초기화">×</button>
+        </div>
+        <div class="filter-row" role="group" aria-label="할일 필터">
+          <button class="filter-button" type="button" data-filter="all" aria-pressed="true">전체</button>
+          <button class="filter-button" type="button" data-filter="today" aria-pressed="false">오늘</button>
+          <button class="filter-button" type="button" data-filter="active" aria-pressed="false">진행 중</button>
+          <button class="filter-button" type="button" data-filter="completed" aria-pressed="false">완료</button>
+          <button class="filter-button" type="button" data-filter="due-soon" aria-pressed="false">마감 임박</button>
+          <button class="filter-button" type="button" data-filter="overdue" aria-pressed="false">기한 지남</button>
+        </div>
+        <div class="search-result-note">
+          <span class="search-summary" aria-live="polite"></span>
+          <span class="search-result-hint">왼쪽 목록에 결과가 표시돼요</span>
+        </div>
+      </section>
+
+      <section class="calendar-panel" aria-label="달력" aria-hidden="true">
+        <div class="calendar-panel-header">
+          <div>
+            <span class="calendar-eyebrow">할일 일정</span>
+            <h2 class="calendar-title">달력</h2>
+          </div>
+          <button class="calendar-close-button" type="button" title="달력 닫기" aria-label="달력 닫기">&times;</button>
+        </div>
+        <div class="calendar-navigation">
+          <button class="calendar-nav-button" type="button" data-calendar-action="previous" aria-label="이전 달">‹</button>
+          <button class="calendar-month-label" type="button" data-calendar-action="toggle-year-picker" aria-haspopup="listbox" aria-expanded="false"></button>
+          <button class="calendar-nav-button" type="button" data-calendar-action="next" aria-label="다음 달">›</button>
+          <button class="calendar-today-button" type="button" data-calendar-action="today">오늘</button>
+          <div class="calendar-year-picker" role="listbox" aria-label="연도 선택" hidden></div>
+        </div>
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div class="calendar-grid" role="grid" aria-label="월별 달력"></div>
+        <div class="calendar-selected-section">
+          <div class="calendar-selected-heading">
+            <div>
+              <span class="calendar-selected-label">선택한 날짜</span>
+              <strong class="calendar-selected-date"></strong>
+            </div>
+            <span class="calendar-selected-count"></span>
+          </div>
+          <ul class="calendar-task-list"></ul>
+        </div>
+        <div class="calendar-character" aria-hidden="true">
+          <img class="calendar-character-img" src="../assets/character-full.png" alt="" draggable="false" />
+        </div>
+      </section>
+
+      <section class="schedule-panel" aria-label="알림 설정" aria-hidden="true">
+        <div class="schedule-panel-heading">
+          <div>
+            <span class="schedule-eyebrow">할일 관리</span>
+            <h2 class="schedule-title">알림</h2>
+          </div>
+          <button class="schedule-close-button" type="button" title="알림 설정 닫기" aria-label="알림 설정 닫기">&times;</button>
+        </div>
+        <label class="schedule-field">
+          <span>설정할 할일</span>
+          <select class="schedule-todo-select" aria-label="설정할 할일"></select>
+        </label>
+        <div class="schedule-selection-summary" aria-live="polite"></div>
+        <label class="schedule-field">
+          <span>알림</span>
+          <select class="notification-select" aria-label="알림 시간">
+            <option value="none">알림 없음</option>
+            <option value="5">5분 전</option>
+            <option value="10">10분 전</option>
+            <option value="30">30분 전</option>
+            <option value="60">1시간 전</option>
+            <option value="1440">하루 전</option>
+          </select>
+        </label>
+        <label class="schedule-field">
+          <span>반복</span>
+          <select class="repeat-select" aria-label="반복 일정">
+            <option value="none">반복 안 함</option>
+            <option value="daily">매일</option>
+            <option value="weekdays">평일</option>
+            <option value="weekly">매주</option>
+            <option value="monthly">매월</option>
+          </select>
+        </label>
+        <p class="schedule-help">마감일이 있는 할일만 알림을 받을 수 있어요. 반복 할일은 완료하면 다음 일정이 자동으로 만들어집니다.</p>
       </section>
 
       <!-- Character Speech Bubble -->

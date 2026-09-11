@@ -182,12 +182,19 @@ autoUpdater.on('error', (err) => {
 
 const WINDOW_SIZE = {
   collapsed: { width: 290, height: 230 },
-  expanded: { width: 410, height: 575 }
+  expanded: { width: 410, height: 575 },
+  search: { width: 700, height: 575 },
+  schedule: { width: 700, height: 575 },
+  calendar: { width: 840, height: 720 }
 };
 
 let mainWindow;
 let tray;
 let expanded = false;
+let calendarMode = false;
+let searchMode = false;
+let scheduleMode = false;
+let baseWindowPosition = null;
 
 function getErrorLogPath() {
   try {
@@ -346,7 +353,69 @@ function clampWindowByVisibleRect(bounds) {
 
 function setExpandedState(nextExpanded) {
   if (!mainWindow || expanded === nextExpanded) return;
+
+  if (!nextExpanded && (calendarMode || searchMode || scheduleMode)) {
+    calendarMode = false;
+    searchMode = false;
+    scheduleMode = false;
+    resizeWindowForMode('expanded');
+  } else if (nextExpanded) {
+    resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
+  }
+
   expanded = nextExpanded;
+}
+
+function resizeWindowForMode(mode) {
+  if (!mainWindow) return;
+
+  const current = mainWindow.getBounds();
+  const nextSize = WINDOW_SIZE[mode] || WINDOW_SIZE.expanded;
+  const anchor = baseWindowPosition || { x: current.x, y: current.y };
+  const nextBounds = clampBounds({
+    x: anchor.x,
+    y: anchor.y,
+    ...nextSize
+  });
+
+  mainWindow.setBounds(nextBounds, false);
+
+  if (mode === 'expanded') {
+    baseWindowPosition = { x: nextBounds.x, y: nextBounds.y };
+  }
+}
+
+function setCalendarModeState(nextCalendarMode) {
+  if (!mainWindow || (calendarMode === nextCalendarMode && (!nextCalendarMode || (!searchMode && !scheduleMode)))) return;
+
+  calendarMode = nextCalendarMode;
+  if (calendarMode) {
+    searchMode = false;
+    scheduleMode = false;
+  }
+  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
+}
+
+function setSearchModeState(nextSearchMode) {
+  if (!mainWindow || (searchMode === nextSearchMode && (!nextSearchMode || (!calendarMode && !scheduleMode)))) return;
+
+  searchMode = nextSearchMode;
+  if (searchMode) {
+    calendarMode = false;
+    scheduleMode = false;
+  }
+  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
+}
+
+function setScheduleModeState(nextScheduleMode) {
+  if (!mainWindow || (scheduleMode === nextScheduleMode && (!nextScheduleMode || (!calendarMode && !searchMode)))) return;
+
+  scheduleMode = nextScheduleMode;
+  if (scheduleMode) {
+    calendarMode = false;
+    searchMode = false;
+  }
+  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
 }
 
 function showMainWindow() {
@@ -390,6 +459,10 @@ function createTray() {
 
 function createWindow() {
   expanded = false;
+  calendarMode = false;
+  searchMode = false;
+  scheduleMode = false;
+  baseWindowPosition = null;
   const size = WINDOW_SIZE.expanded;
   const area = screen.getPrimaryDisplay().workArea;
 
@@ -415,6 +488,8 @@ function createWindow() {
       nodeIntegration: false
     }
   });
+  const initialBounds = mainWindow.getBounds();
+  baseWindowPosition = { x: initialBounds.x, y: initialBounds.y };
   mainWindow.setAlwaysOnTop(false);
   mainWindow.setVisibleOnAllWorkspaces(false);
 
@@ -484,22 +559,42 @@ ipcMain.handle('widget:set-expanded', (_event, nextExpanded) => {
   setExpandedState(Boolean(nextExpanded));
 });
 
+ipcMain.handle('widget:set-calendar-mode', (_event, nextCalendarMode) => {
+  setCalendarModeState(Boolean(nextCalendarMode));
+});
+
+ipcMain.handle('widget:set-search-mode', (_event, nextSearchMode) => {
+  setSearchModeState(Boolean(nextSearchMode));
+});
+
+ipcMain.handle('widget:set-schedule-mode', (_event, nextScheduleMode) => {
+  setScheduleModeState(Boolean(nextScheduleMode));
+});
+
 ipcMain.handle('widget:move-by', (_event, delta) => {
   if (!mainWindow) return;
 
   const current = mainWindow.getBounds();
+  const nextBounds = {
+    ...current,
+    x: current.x + Math.round(delta.dx),
+    y: current.y + Math.round(delta.dy)
+  };
   mainWindow.setBounds(
-    {
-      ...current,
-      x: current.x + Math.round(delta.dx),
-      y: current.y + Math.round(delta.dy)
-    },
+    nextBounds,
     false
   );
+  baseWindowPosition = { x: nextBounds.x, y: nextBounds.y };
 });
 
 ipcMain.handle('todos:load', loadTodoStorage);
 ipcMain.handle('todos:save', saveTodoStorage);
+
+ipcMain.handle('notifications:show', (_event, payload) => {
+  if (!payload || !payload.title) return false;
+  showNotification(String(payload.title), String(payload.body || ''));
+  return true;
+});
 
 ipcMain.handle('google:auth-status', () => {
   return { loggedIn: googleAuth.isAuthenticated() };

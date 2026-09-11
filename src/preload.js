@@ -2,9 +2,13 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('characterTodo', {
   setExpanded: (expanded) => ipcRenderer.invoke('widget:set-expanded', expanded),
+  setCalendarMode: (calendarMode) => ipcRenderer.invoke('widget:set-calendar-mode', calendarMode),
+  setSearchMode: (searchMode) => ipcRenderer.invoke('widget:set-search-mode', searchMode),
+  setScheduleMode: (scheduleMode) => ipcRenderer.invoke('widget:set-schedule-mode', scheduleMode),
   moveBy: (dx, dy) => ipcRenderer.invoke('widget:move-by', { dx, dy }),
   loadTodos: () => ipcRenderer.invoke('todos:load'),
   saveTodos: (todos) => ipcRenderer.invoke('todos:save', todos),
+  showNotification: (payload) => ipcRenderer.invoke('notifications:show', payload),
   googleAuthStatus: () => ipcRenderer.invoke('google:auth-status'),
   googleLogin: () => ipcRenderer.invoke('google:login'),
   googleLogout: () => ipcRenderer.invoke('google:logout'),
