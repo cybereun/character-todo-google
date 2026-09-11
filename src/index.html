@@ -157,24 +157,26 @@
         <p class="schedule-help">마감일이 있는 할일만 알림을 받을 수 있어요. 반복 할일은 완료하면 다음 일정이 자동으로 만들어집니다.</p>
       </section>
 
-      <!-- Character Speech Bubble -->
-      <div class="speech-bubble" style="display:none;" aria-live="polite">
-        <span class="speech-text">오늘도 화이팅! ✨</span>
-        <div class="speech-arrow"></div>
-      </div>
+      <div class="character-anchor">
+        <!-- The bubble and the draggable character share one layout anchor. -->
+        <div class="speech-bubble" style="display:none;" aria-live="polite">
+          <span class="speech-text">오늘도 화이팅! ✨</span>
+          <div class="speech-arrow"></div>
+        </div>
 
-      <button class="character-button" type="button" aria-label="할일창 열기">
-        <span class="character-shadow"></span>
-        <span class="character-art">
-          <img class="character-img character-slim" src="../assets/character-slim.png" alt="" draggable="false" />
-          <img class="character-img character-full" src="../assets/character-full.png" alt="" draggable="false" />
-          <img class="character-img character-slim-blink" src="../assets/character-slim-blink.png" alt="" draggable="false" />
-          <img class="character-img character-full-blink" src="../assets/character-full-blink.png" alt="" draggable="false" />
-          <img class="character-img character-angry" src="../assets/character-angry.png" alt="" draggable="false" />
-          <img class="character-img character-custom" src="" alt="" draggable="false" style="display:none;" />
-        </span>
-        <span class="burst-layer" aria-hidden="true"></span>
-      </button>
+        <button class="character-button" type="button" aria-label="할일창 열기">
+          <span class="character-shadow"></span>
+          <span class="character-art">
+            <img class="character-img character-slim" src="../assets/character-slim.png" alt="" draggable="false" />
+            <img class="character-img character-full" src="../assets/character-full.png" alt="" draggable="false" />
+            <img class="character-img character-slim-blink" src="../assets/character-slim-blink.png" alt="" draggable="false" />
+            <img class="character-img character-full-blink" src="../assets/character-full-blink.png" alt="" draggable="false" />
+            <img class="character-img character-angry" src="../assets/character-angry.png" alt="" draggable="false" />
+            <img class="character-img character-custom" src="" alt="" draggable="false" style="display:none;" />
+          </span>
+          <span class="burst-layer" aria-hidden="true"></span>
+        </button>
+      </div>
 
       <!-- Integrated Settings Modal Dialog -->
       <div id="settings-modal" class="modal-backdrop" style="display:none;">

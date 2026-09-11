@@ -1096,13 +1096,21 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   font-size: 13px;
 }
 
-.character-button {
+.character-anchor {
   position: absolute;
   right: 10px;
   bottom: 8px;
-  display: block;
   width: 266px;
   height: 204px;
+  z-index: 12;
+}
+
+.character-button {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
   padding: 0;
   border: 0;
   outline: none;
@@ -1112,7 +1120,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   z-index: 6;
 }
 
-.widget[data-calendar-mode="true"] .character-button {
+.widget[data-calendar-mode="true"] .character-anchor,
+.widget[data-search-mode="true"] .character-anchor,
+.widget[data-schedule-mode="true"] .character-anchor {
   right: auto;
   left: 134px;
 }
@@ -1496,6 +1506,22 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   color: var(--muted);
 }
 
+/* Keep every side panel in the same fixed layout lane as the draggable base panel. */
+.widget[data-search-mode="true"] .search-panel {
+  left: 396px;
+  right: auto;
+}
+
+.widget[data-schedule-mode="true"] .schedule-panel {
+  left: 396px;
+  right: auto;
+}
+
+.widget[data-calendar-mode="true"] .calendar-panel {
+  left: 412px;
+  right: auto;
+}
+
 /* Reminder and recurrence panel. It follows the existing side-panel pattern. */
 .schedule-panel {
   position: absolute;
@@ -1540,11 +1566,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 .widget[data-schedule-mode="true"] .todo-list {
   max-height: 210px;
-}
-
-.widget[data-schedule-mode="true"] .character-button {
-  right: auto;
-  left: 134px;
 }
 
 .schedule-panel-heading {
@@ -1687,7 +1708,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 .widget[data-schedule-mode="true"] .schedule-panel {
-  right: 18px;
+  left: 396px;
+  right: auto;
 }
 
 /* Final calendar geometry: keep the selected-date card inside the panel. */
@@ -1804,11 +1826,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   animation: none !important;
   transform: none !important;
   transition: none !important;
-}
-
-.widget[data-calendar-mode="true"] .character-button {
-  right: auto;
-  left: 134px;
 }
 
 /* Friendly, colorful presentation for the side-by-side calendar view. */
@@ -2367,11 +2384,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   box-shadow: 0 22px 46px rgba(41, 84, 123, 0.23), 0 3px 12px rgba(80, 145, 211, 0.1);
 }
 
-.widget[data-search-mode="true"] .character-button {
-  right: auto;
-  left: 134px;
-}
-
 .widget[data-search-mode="true"] .speech-bubble {
   display: none !important;
 }
@@ -2434,10 +2446,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 /* Speech Bubble Styles */
-.speech-bubble {
+.character-anchor .speech-bubble {
   position: absolute;
-  bottom: 132px;
-  left: 38px;
+  left: -96px;
+  bottom: 124px;
   right: auto;
   width: 168px;
   min-height: 56px;

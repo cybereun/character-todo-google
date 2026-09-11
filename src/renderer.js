@@ -55,6 +55,7 @@ let showingCompleted = false;
 let editingId = null;
 let subtaskEntryTodoId = null;
 let dragState = null;
+let dragFrameId = null;
 let audioContext = null;
 let undoTodoId = null;
 let undoToastTimer = null;
@@ -1345,14 +1346,42 @@ todoList.addEventListener('keydown', (event) => {
   }
 });
 
+function flushDragMove() {
+  if (!dragState) return;
+
+  dragFrameId = null;
+  const nextX = Math.round(dragState.targetX - dragState.startX);
+  const nextY = Math.round(dragState.targetY - dragState.startY);
+  const dx = nextX - dragState.appliedX;
+  const dy = nextY - dragState.appliedY;
+  if (dx === 0 && dy === 0) return;
+
+  dragState.appliedX = nextX;
+  dragState.appliedY = nextY;
+  void window.characterTodo.moveBy(dx, dy);
+}
+
+function cancelDragFrame() {
+  if (dragFrameId === null) return;
+
+  window.cancelAnimationFrame(dragFrameId);
+  dragFrameId = null;
+}
+
 characterButton.addEventListener('pointerdown', (event) => {
   if (event.button !== 0) return;
 
   characterButton.setPointerCapture(event.pointerId);
   dragState = {
     pointerId: event.pointerId,
+    startX: event.screenX,
+    startY: event.screenY,
+    targetX: event.screenX,
+    targetY: event.screenY,
     lastX: event.screenX,
     lastY: event.screenY,
+    appliedX: 0,
+    appliedY: 0,
     total: 0
   };
   event.preventDefault();
@@ -1367,13 +1396,17 @@ characterButton.addEventListener('pointermove', (event) => {
 
   dragState.lastX = event.screenX;
   dragState.lastY = event.screenY;
+  dragState.targetX = event.screenX;
+  dragState.targetY = event.screenY;
   dragState.total += Math.abs(dx) + Math.abs(dy);
-  window.characterTodo.moveBy(dx, dy);
+  if (dragFrameId === null) dragFrameId = window.requestAnimationFrame(flushDragMove);
 });
 
 characterButton.addEventListener('pointerup', (event) => {
   if (!dragState || dragState.pointerId !== event.pointerId) return;
 
+  cancelDragFrame();
+  flushDragMove();
   const wasDrag = dragState.total > 6;
   dragState = null;
   characterButton.releasePointerCapture(event.pointerId);
@@ -1382,6 +1415,7 @@ characterButton.addEventListener('pointerup', (event) => {
 });
 
 characterButton.addEventListener('pointercancel', () => {
+  cancelDragFrame();
   dragState = null;
 });
 
