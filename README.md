@@ -3,7 +3,7 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%2011-0078D4?style=for-the-badge&logo=windows11&logoColor=white)
 ![Electron](https://img.shields.io/badge/Electron-Desktop-47848F?style=for-the-badge&logo=electron&logoColor=white)
 ![Google API](https://img.shields.io/badge/Google%20API-Integration-4285F4?style=for-the-badge&logo=google&logoColor=white)
-![Version](https://img.shields.io/badge/version-v2.7.2-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-v2.7.3-blue?style=for-the-badge)
 
 복어 캐릭터가 바탕화면 위에서 함께 움직이는 Windows 데스크톱 할일 위젯입니다. (Google Tasks API 연동 버전)
 
@@ -77,6 +77,12 @@ npm run lint:js
 - 시작 실패나 단일 인스턴스 잠금 오류는 사용자 데이터 폴더의 `error.log`에 기록됩니다.
 
 ## 릴리즈 노트
+
+### v2.7.3
+
+- 하단 리본에 `오늘` 바로가기를 추가해 오늘 마감·기한 지난 할일을 한 번에 확인
+- 오늘 보기에서 기한 지난 할일을 위로 정렬하고 완료·무기한·향후 일정은 숨김
+- 오늘 할일 개수를 리본 배지와 목록 요약에 표시
 
 ### v2.7.2
 

@@ -14,6 +14,9 @@ const burstLayer = document.querySelector('.burst-layer');
 const googleSyncBtn = document.querySelector('.google-sync-btn');
 const bulkDeleteBtn = document.querySelector('.bulk-delete-btn');
 const settingsBtn = document.querySelector('.settings-btn');
+const todayRibbonButton = document.querySelector('.today-ribbon-button');
+const todayRibbonCount = document.querySelector('.today-ribbon-count');
+const todayView = window.characterTodoToday;
 const calendarRibbonButton = document.querySelector('.calendar-ribbon-button');
 const calendarPanel = document.querySelector('.calendar-panel');
 const calendarCloseButton = document.querySelector('.calendar-close-button');
@@ -222,6 +225,16 @@ function updateGoogleSyncBtn() {
   }
 }
 
+function updateTodayRibbon() {
+  if (!todayRibbonButton || !todayRibbonCount || !todayView) return;
+
+  const count = todayView.getTodayViewCount(todos, new Date());
+  todayRibbonCount.textContent = String(count);
+  todayRibbonButton.setAttribute('aria-pressed', String(filterMode === 'today'));
+  todayRibbonButton.setAttribute('aria-label', `오늘 할일 ${count}개 보기`);
+  todayRibbonButton.title = filterMode === 'today' ? '오늘 보기 해제' : '오늘 할일 보기';
+}
+
 function escapeHtml(value) {
   return value
     .replaceAll('&', '&amp;')
@@ -301,7 +314,7 @@ function isDueSoon(todo) {
 }
 
 function matchesSearchFilter(todo) {
-  if (filterMode === 'today') return isDueToday(todo);
+  if (filterMode === 'today') return todayView.isTodayViewTodo(todo, new Date());
   if (filterMode === 'active') return todo.status !== 'completed';
   if (filterMode === 'completed') return todo.status === 'completed';
   if (filterMode === 'due-soon') return isDueSoon(todo);
@@ -319,10 +332,14 @@ function getBaseVisibleTodos() {
 
 function getVisibleTodos() {
   const query = searchQuery.trim().toLocaleLowerCase();
-  return getBaseVisibleTodos().filter((todo) => {
+  const visibleTodos = getBaseVisibleTodos().filter((todo) => {
     const matchesQuery = !query || getSearchableTodoText(todo).includes(query);
     return matchesQuery && matchesSearchFilter(todo);
   });
+
+  return filterMode === 'today'
+    ? todayView.getTodayViewTodos(visibleTodos, new Date())
+    : visibleTodos;
 }
 
 function renderSearchPanel() {
@@ -476,6 +493,30 @@ async function setSearchMode(nextSearchMode) {
   }
 
   if (searchMode) searchInput?.focus();
+}
+
+async function setTodayMode(nextTodayMode) {
+  const shouldShowToday = Boolean(nextTodayMode);
+
+  if (!shouldShowToday) {
+    if (searchMode) await setSearchMode(false);
+    filterMode = 'all';
+    showingCompleted = false;
+    editingId = null;
+    subtaskEntryTodoId = null;
+    renderTodos();
+    return;
+  }
+
+  if (calendarMode) await setCalendarMode(false);
+  if (scheduleMode) await setScheduleMode(false);
+  if (searchMode) await setSearchMode(false);
+
+  filterMode = 'today';
+  showingCompleted = false;
+  editingId = null;
+  subtaskEntryTodoId = null;
+  renderTodos();
 }
 
 function setSearchFilter(nextFilter) {
@@ -661,11 +702,14 @@ function renderTodos() {
   const hasActiveSearch = searchMode && hasSearchCriteria;
   widget.dataset.hasTodos = String(activeCount > 0);
   widget.dataset.hasOverdue = String(overdueCount > 0);
+  updateTodayRibbon();
   if (showingCompleted) subtaskEntryTodoId = null;
   viewToggle.textContent = showingCompleted ? '할일 목록 보기' : '완료 목록 보기';
   viewToggle.setAttribute('aria-pressed', String(showingCompleted));
   todoCount.textContent = hasActiveSearch
     ? `검색 ${visibleTodos.length}개`
+    : filterMode === 'today'
+      ? `오늘 ${visibleTodos.length}개`
     : showingCompleted
       ? `완료 ${completedCount}개`
       : overdueCount > 0
@@ -674,7 +718,11 @@ function renderTodos() {
   if (googleSyncBtn) googleSyncBtn.style.display = showingCompleted ? 'none' : 'block';
   if (bulkDeleteBtn) bulkDeleteBtn.style.display = showingCompleted ? 'block' : 'none';
 
-  todoList.dataset.emptyMessage = hasActiveSearch && todos.length > 0 ? '조건에 맞는 할일이 없어요' : '비어 있어요';
+  todoList.dataset.emptyMessage = hasActiveSearch && todos.length > 0
+    ? '조건에 맞는 할일이 없어요'
+    : filterMode === 'today'
+      ? '오늘 할 일이 없어요'
+      : '비어 있어요';
   todoList.innerHTML = visibleTodos
     .map((todo) => {
       const text = escapeHtml(todo.text);
@@ -1185,6 +1233,10 @@ viewToggle.addEventListener('click', () => {
   editingId = null;
   subtaskEntryTodoId = null;
   renderTodos();
+});
+
+todayRibbonButton?.addEventListener('click', () => {
+  void setTodayMode(filterMode !== 'today');
 });
 
 searchRibbonButton?.addEventListener('click', () => {

@@ -40,6 +40,11 @@
         </div>
         <ul class="todo-list" aria-live="polite"></ul>
         <div class="action-ribbon" aria-label="빠른 기능">
+          <button class="ribbon-button today-ribbon-button" type="button" aria-pressed="false" aria-label="오늘 할일 보기" title="오늘 할일 보기">
+            <span class="ribbon-icon" aria-hidden="true">📌</span>
+            <span>오늘</span>
+            <span class="ribbon-badge today-ribbon-count" aria-hidden="true">0</span>
+          </button>
           <button class="ribbon-button search-ribbon-button" type="button" aria-pressed="false" title="검색 및 필터 열기">
             <span class="ribbon-icon" aria-hidden="true">🔍</span>
             <span>검색</span>
@@ -295,6 +300,7 @@
         </div>
       </div>
     </main>
+    <script src="./today-view.js"></script>
     <script src="./renderer.js"></script>
   </body>
 </html>

@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut,
 const { autoUpdater } = require('electron-updater');
 const { UPDATE_CHECK_INTERVAL_MS, serializeUpdateResult } = require('./update-utils');
 
-app.setAppUserModelId('캐릭터 Todo V2.7.2');
+app.setAppUserModelId('캐릭터 Todo V2.7.3');
 
 autoUpdater.autoDownload = false;
 autoUpdater.allowDowngrade = false;

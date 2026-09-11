@@ -1,12 +1,12 @@
 {
   "name": "character-todo-google",
-  "version": "2.7.2",
+  "version": "2.7.3",
   "description": "Character Todo app integrating with Google Gemini AI",
   "main": "src/main.js",
   "private": true,
   "scripts": {
     "start": "powershell -ExecutionPolicy Bypass -File ./run-app.ps1",
-    "lint:js": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js",
+    "lint:js": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js && node --check src/today-view.js",
     "dist": "powershell -ExecutionPolicy Bypass -File ./build-exe.ps1"
   },
   "build": {
