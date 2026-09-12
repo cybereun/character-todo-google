@@ -27,7 +27,7 @@ test('calendar mode keeps the widened todo panel and calendar panel in one lane'
 
   assert.match(
     styles,
-    /\.widget\[data-calendar-mode="true"\] \.calendar-panel\s*\{(?=[^}]*\bleft:\s*420px;)(?=[^}]*\bwidth:\s*410px;)[^}]*\}/
+    /\.widget\[data-calendar-mode="true"\] \.calendar-panel\s*\{(?=[^}]*\bleft:\s*414px;)(?=[^}]*\bwidth:\s*410px;)[^}]*\}/
   );
 });
 

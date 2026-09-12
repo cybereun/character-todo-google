@@ -17,6 +17,11 @@ const settingsBtn = document.querySelector('.settings-btn');
 const todayRibbonButton = document.querySelector('.today-ribbon-button');
 const todayRibbonCount = document.querySelector('.today-ribbon-count');
 const todayView = window.characterTodoToday;
+const todayAnnouncements = window.characterTodoAnnouncements;
+const todayPanel = document.querySelector('.today-panel');
+const todayCloseButton = document.querySelector('.today-close-button');
+const todaySummary = document.querySelector('.today-summary');
+const todayTaskList = document.querySelector('.today-task-list');
 const calendarRibbonButton = document.querySelector('.calendar-ribbon-button');
 const calendarPanel = document.querySelector('.calendar-panel');
 const calendarCloseButton = document.querySelector('.calendar-close-button');
@@ -71,6 +76,7 @@ let searchQuery = '';
 let filterMode = 'all';
 let scheduleMode = false;
 let selectedScheduleTodoId = null;
+let todayMode = false;
 
 const dueSoonWindowMs = 72 * 60 * 60 * 1000;
 const notificationMinutes = [5, 10, 30, 60, 1440];
@@ -230,9 +236,9 @@ function updateTodayRibbon() {
 
   const count = todayView.getTodayViewCount(todos, new Date());
   todayRibbonCount.textContent = String(count);
-  todayRibbonButton.setAttribute('aria-pressed', String(filterMode === 'today'));
+  todayRibbonButton.setAttribute('aria-pressed', String(todayMode));
   todayRibbonButton.setAttribute('aria-label', `오늘 할일 ${count}개 보기`);
-  todayRibbonButton.title = filterMode === 'today' ? '오늘 보기 해제' : '오늘 할일 보기';
+  todayRibbonButton.title = todayMode ? '오늘 보기 닫기' : '오늘 할일 보기';
 }
 
 function escapeHtml(value) {
@@ -257,6 +263,10 @@ async function setExpanded(nextExpanded) {
 
   if (!nextExpanded && scheduleMode) {
     await setScheduleMode(false);
+  }
+
+  if (!nextExpanded && todayMode) {
+    await setTodayMode(false);
   }
 
   expanded = nextExpanded;
@@ -357,6 +367,32 @@ function renderSearchPanel() {
   if (searchSummary) searchSummary.textContent = hasCriteria ? `${matchedCount}개 찾음` : `${baseCount}개 표시 중`;
 }
 
+function renderTodayPanel() {
+  if (!todayPanel || !todayView) return;
+
+  todayPanel.setAttribute('aria-hidden', String(!todayMode));
+  todayRibbonButton?.setAttribute('aria-pressed', String(todayMode));
+
+  const todayTodos = todayView.getTodayViewTodos(todos, new Date());
+  const overdueCount = todayTodos.filter(isOverdue).length;
+  if (todaySummary) {
+    todaySummary.textContent = todayTodos.length
+      ? `${todayTodos.length}개${overdueCount ? ` · 기한 지남 ${overdueCount}개` : ''}`
+      : '오늘 예정된 할일이 없어요';
+  }
+
+  if (!todayTaskList) return;
+  todayTaskList.innerHTML = todayTodos.length
+    ? todayTodos.map((todo) => `
+        <li class="today-task-item${isOverdue(todo) ? ' is-overdue' : ''}">
+          <span class="today-task-status" aria-hidden="true">${isOverdue(todo) ? '!' : '•'}</span>
+          <span class="today-task-text" title="${escapeHtml(todo.text)}">${escapeHtml(todo.text)}</span>
+          <span class="today-task-time">${formatDueLabel(todo)}</span>
+        </li>
+      `).join('')
+    : '<li class="today-empty-task">오늘 할 일이 없어요.</li>';
+}
+
 function formatNotificationLabel(minutes) {
   if (!Number.isFinite(minutes)) return '알림 없음';
   if (minutes === 1440) return '하루 전';
@@ -439,15 +475,23 @@ async function setScheduleMode(nextScheduleMode) {
   scheduleMode = Boolean(nextScheduleMode);
   widget.dataset.scheduleMode = String(scheduleMode);
 
+  if (scheduleMode && todayMode) {
+    await setTodayMode(false);
+  }
+
   if (scheduleMode) {
     calendarMode = false;
     searchMode = false;
+    todayMode = false;
     widget.dataset.calendarMode = 'false';
     widget.dataset.searchMode = 'false';
+    widget.dataset.todayMode = 'false';
     calendarPanel?.setAttribute('aria-hidden', 'true');
     searchPanel?.setAttribute('aria-hidden', 'true');
+    todayPanel?.setAttribute('aria-hidden', 'true');
     calendarRibbonButton?.setAttribute('aria-pressed', 'false');
     searchRibbonButton?.setAttribute('aria-pressed', 'false');
+    todayRibbonButton?.setAttribute('aria-pressed', 'false');
     getSelectedScheduleTodo();
   }
 
@@ -464,6 +508,10 @@ async function setSearchMode(nextSearchMode) {
 
   searchMode = Boolean(nextSearchMode);
   widget.dataset.searchMode = String(searchMode);
+
+  if (searchMode && todayMode) {
+    await setTodayMode(false);
+  }
 
   if (searchMode && calendarMode) {
     calendarMode = false;
@@ -498,25 +546,25 @@ async function setSearchMode(nextSearchMode) {
 async function setTodayMode(nextTodayMode) {
   const shouldShowToday = Boolean(nextTodayMode);
 
-  if (!shouldShowToday) {
+  if (todayMode === shouldShowToday) return;
+
+  todayMode = shouldShowToday;
+  widget.dataset.todayMode = String(todayMode);
+
+  if (todayMode) {
+    if (calendarMode) await setCalendarMode(false);
+    if (scheduleMode) await setScheduleMode(false);
     if (searchMode) await setSearchMode(false);
-    filterMode = 'all';
-    showingCompleted = false;
-    editingId = null;
-    subtaskEntryTodoId = null;
-    renderTodos();
-    return;
   }
 
-  if (calendarMode) await setCalendarMode(false);
-  if (scheduleMode) await setScheduleMode(false);
-  if (searchMode) await setSearchMode(false);
-
-  filterMode = 'today';
   showingCompleted = false;
   editingId = null;
   subtaskEntryTodoId = null;
   renderTodos();
+
+  if (window.characterTodo?.setTodayMode) {
+    await window.characterTodo.setTodayMode(todayMode);
+  }
 }
 
 function setSearchFilter(nextFilter) {
@@ -675,21 +723,28 @@ async function setCalendarMode(nextCalendarMode) {
 
   calendarMode = nextCalendarMode;
   widget.dataset.calendarMode = String(calendarMode);
+  if (calendarMode && todayMode) {
+    await setTodayMode(false);
+  }
   if (calendarPanel) calendarPanel.setAttribute('aria-hidden', String(!calendarMode));
   if (calendarRibbonButton) calendarRibbonButton.setAttribute('aria-pressed', String(calendarMode));
 
   if (calendarMode) {
     searchMode = false;
     scheduleMode = false;
+    todayMode = false;
     searchQuery = '';
     filterMode = 'all';
     showingCompleted = false;
     if (searchInput) searchInput.value = '';
     widget.dataset.searchMode = 'false';
+    widget.dataset.todayMode = 'false';
     searchPanel?.setAttribute('aria-hidden', 'true');
     searchRibbonButton?.setAttribute('aria-pressed', 'false');
     schedulePanel?.setAttribute('aria-hidden', 'true');
     scheduleRibbonButton?.setAttribute('aria-pressed', 'false');
+    todayPanel?.setAttribute('aria-hidden', 'true');
+    todayRibbonButton?.setAttribute('aria-pressed', 'false');
     widget.dataset.scheduleMode = 'false';
     selectCalendarToday();
   }
@@ -794,6 +849,7 @@ function renderTodos() {
 
   renderSearchPanel();
   renderSchedulePanel();
+  renderTodayPanel();
   if (calendarMode) renderCalendar();
 }
 
@@ -1244,7 +1300,11 @@ viewToggle.addEventListener('click', () => {
 });
 
 todayRibbonButton?.addEventListener('click', () => {
-  void setTodayMode(filterMode !== 'today');
+  void setTodayMode(!todayMode);
+});
+
+todayCloseButton?.addEventListener('click', () => {
+  void setTodayMode(false);
 });
 
 searchRibbonButton?.addEventListener('click', () => {
@@ -1632,6 +1692,7 @@ function startCharacterBlink() {
 
 void initTodos().then(() => {
   startCharacterBlink();
+  startTodayAnnouncementTimer();
   void checkDueNotifications();
 });
 window.setInterval(() => {
@@ -1848,6 +1909,13 @@ function initAutoUpdateUI() {
 const speechBubble = document.querySelector('.speech-bubble');
 const speechText = document.querySelector('.speech-text');
 let speechTimer = null;
+let todayAnnouncementTimer = null;
+let lastTodayAnnouncement = null;
+
+const speechAnnouncementEnabledKey = 'speech-announcement-enabled';
+const speechAnnouncementIntervalKey = 'speech-announcement-interval-minutes';
+const defaultSpeechAnnouncementIntervalMinutes = todayAnnouncements?.DEFAULT_ANNOUNCEMENT_INTERVAL_MINUTES || 30;
+const speechAnnouncementIntervalOptions = todayAnnouncements?.ANNOUNCEMENT_INTERVAL_OPTIONS || [10, 30, 60, 120];
 
 const encouragementMessages = [
   '오늘도 화이팅이에요! ✨',
@@ -1869,6 +1937,80 @@ function showSpeechBubble(message) {
   speechTimer = setTimeout(() => {
     speechBubble.style.display = 'none';
   }, 3500);
+}
+
+function getTodayAnnouncementSettings() {
+  const savedEnabled = localStorage.getItem(speechAnnouncementEnabledKey);
+  const savedInterval = localStorage.getItem(speechAnnouncementIntervalKey);
+  const rawSettings = {
+    enabled: savedEnabled !== 'false',
+    intervalMinutes: savedInterval === null ? defaultSpeechAnnouncementIntervalMinutes : Number(savedInterval)
+  };
+
+  return todayAnnouncements?.normalizeAnnouncementSettings
+    ? todayAnnouncements.normalizeAnnouncementSettings(rawSettings)
+    : {
+        enabled: rawSettings.enabled,
+        intervalMinutes: speechAnnouncementIntervalOptions.includes(rawSettings.intervalMinutes)
+          ? rawSettings.intervalMinutes
+          : defaultSpeechAnnouncementIntervalMinutes
+      };
+}
+
+function loadTodayAnnouncementSettingsIntoSettings() {
+  const settings = getTodayAnnouncementSettings();
+  const enabledInput = document.getElementById('settings-announcement-enabled');
+  const intervalSelect = document.getElementById('settings-announcement-interval');
+
+  if (enabledInput) enabledInput.checked = settings.enabled;
+  if (intervalSelect) intervalSelect.value = String(settings.intervalMinutes);
+}
+
+function saveTodayAnnouncementSettingsFromSettings() {
+  const enabledInput = document.getElementById('settings-announcement-enabled');
+  const intervalSelect = document.getElementById('settings-announcement-interval');
+  const settings = todayAnnouncements?.normalizeAnnouncementSettings
+    ? todayAnnouncements.normalizeAnnouncementSettings({
+        enabled: enabledInput?.checked !== false,
+        intervalMinutes: Number(intervalSelect?.value)
+      })
+    : {
+        enabled: enabledInput?.checked !== false,
+        intervalMinutes: speechAnnouncementIntervalOptions.includes(Number(intervalSelect?.value))
+          ? Number(intervalSelect.value)
+          : defaultSpeechAnnouncementIntervalMinutes
+      };
+
+  localStorage.setItem(speechAnnouncementEnabledKey, String(settings.enabled));
+  localStorage.setItem(speechAnnouncementIntervalKey, String(settings.intervalMinutes));
+  if (!settings.enabled && speechBubble) speechBubble.style.display = 'none';
+  startTodayAnnouncementTimer();
+}
+
+function showTodayAnnouncement() {
+  const count = todayView?.getTodayViewCount(todos, new Date()) || 0;
+  if (count < 1) return;
+
+  const message = todayAnnouncements?.pickTodayAnnouncement
+    ? todayAnnouncements.pickTodayAnnouncement(count, lastTodayAnnouncement)
+    : `오늘 할일이 ${count}개 있어요!!`;
+  if (!message) return;
+
+  lastTodayAnnouncement = message;
+  showSpeechBubble(message);
+}
+
+function startTodayAnnouncementTimer() {
+  if (todayAnnouncementTimer) window.clearInterval(todayAnnouncementTimer);
+  todayAnnouncementTimer = null;
+
+  const settings = getTodayAnnouncementSettings();
+  if (!settings.enabled) return;
+
+  todayAnnouncementTimer = window.setInterval(
+    showTodayAnnouncement,
+    settings.intervalMinutes * 60 * 1000
+  );
 }
 
 if (characterButton) {
@@ -2073,11 +2215,13 @@ async function loadGeminiKeyIntoSettings() {
 function initSettingsModal() {
   const savedChar = localStorage.getItem('selected-character') || 'blowfish';
   applyCharacter(savedChar);
+  loadTodayAnnouncementSettingsIntoSettings();
 
   if (settingsBtn && settingsModal) {
     settingsBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       await loadGeminiKeyIntoSettings();
+      loadTodayAnnouncementSettingsIntoSettings();
       settingsModal.style.display = 'flex';
       checkUpdateForUI?.(true);
     });
@@ -2121,6 +2265,9 @@ function initSettingsModal() {
   };
   if (settingsGeminiLinkBtn) settingsGeminiLinkBtn.addEventListener('click', openAiStudio);
   if (settingsGeminiUrl) settingsGeminiUrl.addEventListener('click', openAiStudio);
+
+  document.getElementById('settings-announcement-enabled')?.addEventListener('change', saveTodayAnnouncementSettingsFromSettings);
+  document.getElementById('settings-announcement-interval')?.addEventListener('change', saveTodayAnnouncementSettingsFromSettings);
 
   charCards.forEach((card) => {
     card.addEventListener('click', () => {

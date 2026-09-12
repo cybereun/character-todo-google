@@ -2790,7 +2790,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 .widget[data-calendar-mode="true"] .calendar-panel {
-  left: 420px;
+  left: 414px;
   right: auto;
   width: 410px;
 }
@@ -2821,4 +2821,258 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   gap: 3px;
   padding: 0 6px;
   white-space: nowrap;
+}
+
+/* Today uses the same two-panel layout as search and reminders. */
+.today-panel {
+  position: absolute;
+  right: 18px;
+  bottom: 206px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 286px;
+  height: 360px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.84);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.995), rgba(255, 242, 247, 0.98));
+  box-shadow: 0 22px 46px rgba(123, 73, 112, 0.2), 0 3px 12px rgba(235, 112, 151, 0.12);
+  backdrop-filter: blur(18px);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translateX(16px);
+  transition: opacity 180ms ease, transform 260ms ease, visibility 180ms ease;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.widget[data-today-mode="true"] .today-panel {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.today-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+}
+
+.today-eyebrow {
+  display: block;
+  color: #d15c86;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.today-title {
+  margin: 2px 0 0;
+  color: #6d3158;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.today-title::before {
+  margin-right: 6px;
+  content: "📌";
+  font-size: 18px;
+}
+
+.today-close-button {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff0f6, #ffe2ec);
+  color: #d74d7b;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.today-close-button:hover {
+  background: linear-gradient(145deg, #ffe3ef, #ffd1e0);
+}
+
+.today-summary {
+  min-height: 18px;
+  padding: 8px 10px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #b45678;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.today-task-list {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 7px;
+  min-height: 0;
+  max-height: 250px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.today-task-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 1px 7px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(226, 144, 170, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.today-task-item.is-overdue {
+  border-color: rgba(255, 111, 158, 0.4);
+  background: rgba(255, 239, 246, 0.9);
+}
+
+.today-task-status {
+  grid-row: span 2;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffd76b;
+  color: #72551c;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.today-task-item.is-overdue .today-task-status {
+  background: #ff7f9c;
+  color: white;
+}
+
+.today-task-text {
+  min-width: 0;
+  overflow: hidden;
+  color: #63344f;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-task-time {
+  min-width: 0;
+  overflow: hidden;
+  color: #a16b86;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.today-empty-task {
+  padding: 28px 10px;
+  color: #a16b86;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Keep the 4px gap between the left todo panel and every right-side panel. */
+.widget[data-search-mode="true"] .search-panel {
+  left: 396px;
+  right: auto;
+}
+
+.widget[data-schedule-mode="true"] .schedule-panel {
+  left: 396px;
+  right: auto;
+}
+
+.widget[data-today-mode="true"] .today-panel {
+  left: 396px;
+  right: auto;
+  width: 286px;
+}
+
+.widget[data-calendar-mode="true"] .calendar-panel {
+  left: 414px;
+  right: auto;
+  width: 410px;
+}
+
+.widget[data-today-mode="true"] .todo-panel {
+  right: auto;
+  left: 18px;
+  width: 374px;
+  height: 360px;
+  max-height: 360px;
+}
+
+.widget[data-today-mode="true"] .todo-list {
+  max-height: 210px;
+}
+
+.widget[data-today-mode="true"] .character-anchor {
+  right: auto;
+  left: 134px;
+}
+
+.action-ribbon .ribbon-button.today-ribbon-button {
+  background: linear-gradient(135deg, #ffe8ef, #fff1c9);
+  color: #a24d6c;
+}
+
+.action-ribbon .ribbon-button.today-ribbon-button:hover,
+.action-ribbon .ribbon-button.today-ribbon-button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #ffcbdc, #ffe39a);
+}
+
+.settings-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settings-checkbox-row input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--blue);
+}
+
+.settings-field {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-select {
+  width: 100%;
+  height: 32px;
+  padding: 0 9px;
+  border: 1px solid rgba(78, 108, 124, 0.25);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.settings-select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(79, 143, 178, 0.16);
 }

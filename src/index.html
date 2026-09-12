@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="widget" data-expanded="false" data-has-todos="false" data-has-overdue="false">
+    <main class="widget" data-expanded="false" data-has-todos="false" data-has-overdue="false" data-today-mode="false">
       <section class="todo-panel" aria-label="할일 목록">
         <form class="todo-form" autocomplete="off">
           <span class="todo-entry">
@@ -162,6 +162,18 @@
         <p class="schedule-help">마감일이 있는 할일만 알림을 받을 수 있어요. 반복 할일은 완료하면 다음 일정이 자동으로 만들어집니다.</p>
       </section>
 
+      <section class="today-panel" aria-label="오늘 할일" aria-hidden="true">
+        <div class="today-panel-heading">
+          <div>
+            <span class="today-eyebrow">오늘의 집중</span>
+            <h2 class="today-title">오늘 할일</h2>
+          </div>
+          <button class="today-close-button" type="button" title="오늘 할일 닫기" aria-label="오늘 할일 닫기">&times;</button>
+        </div>
+        <div class="today-summary" aria-live="polite"></div>
+        <ul class="today-task-list" aria-live="polite"></ul>
+      </section>
+
       <div class="character-anchor">
         <!-- The bubble and the draggable character share one layout anchor. -->
         <div class="speech-bubble" style="display:none;" aria-live="polite">
@@ -258,6 +270,26 @@
 
             <hr class="settings-divider" />
 
+            <div class="settings-section">
+              <h4 class="settings-section-title">📣 오늘 할일 알림</h4>
+              <label class="settings-checkbox-row">
+                <input id="settings-announcement-enabled" type="checkbox" checked />
+                <span>오늘 할일이 있을 때 캐릭터가 알려주기</span>
+              </label>
+              <label class="settings-field">
+                <span>알림 주기</span>
+                <select id="settings-announcement-interval" class="settings-select" aria-label="오늘 할일 알림 주기">
+                  <option value="30" selected>30분마다</option>
+                  <option value="10">10분마다</option>
+                  <option value="60">1시간마다</option>
+                  <option value="120">2시간마다</option>
+                </select>
+              </label>
+              <p class="settings-tip">오늘 할일이 하나 이상 있을 때만 말풍선으로 알려줘요.</p>
+            </div>
+
+            <hr class="settings-divider" />
+
             <div class="settings-section settings-info-section">
               <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
                 <span style="font-size:12px; color:var(--muted);">앱 버전: <strong id="settings-app-version">v...</strong></span>
@@ -301,6 +333,7 @@
       </div>
     </main>
     <script src="./today-view.js"></script>
+    <script src="./today-announcements.js"></script>
     <script src="./renderer.js"></script>
   </body>
 </html>

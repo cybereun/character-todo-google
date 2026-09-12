@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('characterTodo', {
   setCalendarMode: (calendarMode) => ipcRenderer.invoke('widget:set-calendar-mode', calendarMode),
   setSearchMode: (searchMode) => ipcRenderer.invoke('widget:set-search-mode', searchMode),
   setScheduleMode: (scheduleMode) => ipcRenderer.invoke('widget:set-schedule-mode', scheduleMode),
+  setTodayMode: (todayMode) => ipcRenderer.invoke('widget:set-today-mode', todayMode),
   moveBy: (dx, dy) => ipcRenderer.invoke('widget:move-by', { dx, dy }),
   loadTodos: () => ipcRenderer.invoke('todos:load'),
   saveTodos: (todos) => ipcRenderer.invoke('todos:save', todos),

@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, Tray, ipcMain, screen, dialog, globalShortcut,
 const { autoUpdater } = require('electron-updater');
 const { UPDATE_CHECK_INTERVAL_MS, serializeUpdateResult } = require('./update-utils');
 
-app.setAppUserModelId('캐릭터 Todo V2.7.4');
+app.setAppUserModelId('캐릭터 Todo V2.7.5');
 
 autoUpdater.autoDownload = false;
 autoUpdater.allowDowngrade = false;
@@ -185,6 +185,7 @@ const WINDOW_SIZE = {
   expanded: { width: 410, height: 575 },
   search: { width: 700, height: 575 },
   schedule: { width: 700, height: 575 },
+  today: { width: 700, height: 575 },
   calendar: { width: 840, height: 720 }
 };
 
@@ -194,6 +195,7 @@ let expanded = false;
 let calendarMode = false;
 let searchMode = false;
 let scheduleMode = false;
+let todayMode = false;
 let baseWindowPosition = null;
 
 function getErrorLogPath() {
@@ -354,13 +356,14 @@ function clampWindowByVisibleRect(bounds) {
 function setExpandedState(nextExpanded) {
   if (!mainWindow || expanded === nextExpanded) return;
 
-  if (!nextExpanded && (calendarMode || searchMode || scheduleMode)) {
+  if (!nextExpanded && (calendarMode || searchMode || scheduleMode || todayMode)) {
     calendarMode = false;
     searchMode = false;
     scheduleMode = false;
+    todayMode = false;
     resizeWindowForMode('expanded');
   } else if (nextExpanded) {
-    resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
+    resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : todayMode ? 'today' : 'expanded');
   }
 
   expanded = nextExpanded;
@@ -386,36 +389,51 @@ function resizeWindowForMode(mode) {
 }
 
 function setCalendarModeState(nextCalendarMode) {
-  if (!mainWindow || (calendarMode === nextCalendarMode && (!nextCalendarMode || (!searchMode && !scheduleMode)))) return;
+  if (!mainWindow || (calendarMode === nextCalendarMode && (!nextCalendarMode || (!searchMode && !scheduleMode && !todayMode)))) return;
 
   calendarMode = nextCalendarMode;
   if (calendarMode) {
     searchMode = false;
     scheduleMode = false;
+    todayMode = false;
   }
-  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
+  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : todayMode ? 'today' : 'expanded');
 }
 
 function setSearchModeState(nextSearchMode) {
-  if (!mainWindow || (searchMode === nextSearchMode && (!nextSearchMode || (!calendarMode && !scheduleMode)))) return;
+  if (!mainWindow || (searchMode === nextSearchMode && (!nextSearchMode || (!calendarMode && !scheduleMode && !todayMode)))) return;
 
   searchMode = nextSearchMode;
   if (searchMode) {
     calendarMode = false;
     scheduleMode = false;
+    todayMode = false;
   }
-  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
+  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : todayMode ? 'today' : 'expanded');
 }
 
 function setScheduleModeState(nextScheduleMode) {
-  if (!mainWindow || (scheduleMode === nextScheduleMode && (!nextScheduleMode || (!calendarMode && !searchMode)))) return;
+  if (!mainWindow || (scheduleMode === nextScheduleMode && (!nextScheduleMode || (!calendarMode && !searchMode && !todayMode)))) return;
 
   scheduleMode = nextScheduleMode;
   if (scheduleMode) {
     calendarMode = false;
     searchMode = false;
+    todayMode = false;
   }
-  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : 'expanded');
+  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : todayMode ? 'today' : 'expanded');
+}
+
+function setTodayModeState(nextTodayMode) {
+  if (!mainWindow || (todayMode === nextTodayMode && (!nextTodayMode || (!calendarMode && !searchMode && !scheduleMode)))) return;
+
+  todayMode = nextTodayMode;
+  if (todayMode) {
+    calendarMode = false;
+    searchMode = false;
+    scheduleMode = false;
+  }
+  if (expanded) resizeWindowForMode(calendarMode ? 'calendar' : searchMode ? 'search' : scheduleMode ? 'schedule' : todayMode ? 'today' : 'expanded');
 }
 
 function showMainWindow() {
@@ -462,6 +480,7 @@ function createWindow() {
   calendarMode = false;
   searchMode = false;
   scheduleMode = false;
+  todayMode = false;
   baseWindowPosition = null;
   const size = WINDOW_SIZE.expanded;
   const area = screen.getPrimaryDisplay().workArea;
@@ -569,6 +588,10 @@ ipcMain.handle('widget:set-search-mode', (_event, nextSearchMode) => {
 
 ipcMain.handle('widget:set-schedule-mode', (_event, nextScheduleMode) => {
   setScheduleModeState(Boolean(nextScheduleMode));
+});
+
+ipcMain.handle('widget:set-today-mode', (_event, nextTodayMode) => {
+  setTodayModeState(Boolean(nextTodayMode));
 });
 
 ipcMain.handle('widget:move-by', (_event, delta) => {
